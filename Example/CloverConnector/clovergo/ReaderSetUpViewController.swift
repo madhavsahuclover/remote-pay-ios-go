@@ -38,7 +38,7 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
         {
             if(((PARAMETERS.accessToken) != nil) && ((PARAMETERS.apiKey) != nil) && ((PARAMETERS.secret) != nil))
             {
-                let config350Reader : CloverGoDeviceConfiguration = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .qa).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).deviceType(.RP350).enableLogs(true).build()
+                let config350Reader : CloverGoDeviceConfiguration = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .sandbox).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).deviceType(.RP350).enableLogs(true).build()
                 
                 config350Reader.remoteApplicationID = "com.test.unified.sdk"
 //                config350Reader.remoteSourceSDK = "1.4.0"
@@ -76,7 +76,7 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
             if(((PARAMETERS.accessToken) != nil) && ((PARAMETERS.apiKey) != nil) && ((PARAMETERS.secret) != nil))
             {
 
-                let config450Reader = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .qa).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).enableLogs(true).build()
+                let config450Reader = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .sandbox).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).enableLogs(true).build()
                 config450Reader.remoteApplicationID = "com.test.unified.sdk"
 //                config450Reader.remoteSourceSDK = "1.4.0"
                 cloverConnector450Reader = CloverGoConnector(config: config450Reader)
