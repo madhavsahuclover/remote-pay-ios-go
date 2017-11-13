@@ -52,7 +52,9 @@ This section will provide some quick steps to get started with the SDK. To integ
 ![app_permissions](/images/app_permissions.png) 
   
 **6. Setup your unique application id:** Provide a unique application id for your application, you can use your package name or any identifier that uniquely identifies the transactions of your application. Set this up in the Semi-integrated App section of your application settings.  
-![app_remoteid](/images/app_remoteid.png)   
+![app_remoteid](/images/app_remoteid.png)  
+  
+Please make sure that your application bundle id is the same as the one defined in this field.
   
 ### OAuth Flow  
 This section describes the OAuth flow steps to get the access token required to initialize the CloverGoDeviceConfiguration object.  
