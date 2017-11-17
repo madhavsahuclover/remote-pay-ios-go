@@ -106,7 +106,7 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
     @IBAction func action_skipButton(sender: AnyObject)
     {
         
-        let defaultConfig = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .qa).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).build()
+        let defaultConfig = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .sandbox).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).build()
         cloverConnector450Reader = CloverGoConnector(config: defaultConfig)
         
         cloverConnectorListener = CloverGoConnectorListener(cloverConnector: cloverConnector450Reader!)
