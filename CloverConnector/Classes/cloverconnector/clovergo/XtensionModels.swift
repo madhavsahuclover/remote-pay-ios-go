@@ -19,7 +19,7 @@ extension CLVModels.Payments {
         public var address : String?
         public var zipCode : String?
         
-        public let cardPresent : Bool = false
+        public var cardPresent : Bool = false
         
         public init(cardNumber:String, expirationDate:String, cvv:String) {
             self.cardNumber = cardNumber
