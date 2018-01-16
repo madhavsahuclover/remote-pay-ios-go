@@ -10,7 +10,7 @@ This SDK allows your iOS-based Point-of-Sale (POS) system to communicate with a 
 
 It includes the SDK and an example POS. To work with the project effectively, you will need:
 * XCode 9.0.1+  
-* iOS 9.2 and above on your device  
+* iOS 9.0 and above on your device  
 * Cocoapods 
   
 To experience transactions end-to-end from the merchant and customer perspectives, we also recommend ordering a [Clover Go DevKit](http://cloverdevkit.com/collections/devkits/products/clover-all-in-one-developer-kit)
