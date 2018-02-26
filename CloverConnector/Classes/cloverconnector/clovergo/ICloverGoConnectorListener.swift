@@ -26,4 +26,5 @@ public protocol ICloverGoConnectorListener : ICloverConnectorListener {
     
     func onKeyedCardDataRequired() -> Void
     
+    func onRetrievePendingPaymentStats(response : RetrievePendingPaymentsStatsResponse) -> Void
 }

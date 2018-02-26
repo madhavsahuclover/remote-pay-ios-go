@@ -160,7 +160,7 @@ class EnumerationUtil {
         }
     }
     
-    class func CardReaderEvent_toGoReaderTransactionEvent(event:CardReaderEvent) -> CLVModels.Payments.GoTransactionEvent? {
+    class func CardReaderEvent_toGoReaderTransactionEvent(event:TransactionEvent) -> CLVModels.Payments.GoTransactionEvent? {
         switch event {
         case .card_swiped:
             return .CARD_SWIPED
@@ -184,8 +184,14 @@ class EnumerationUtil {
             return .SWIPE_FAILED
         case .remove_card:
             return .REMOVE_CARD
-        default:
-            return nil
+        case .processing_transaction:
+            return .PROCESSING_TRANSACTION
+        case .multiple_contactless_cards_detected:
+            return .MULTIPLE_CONTACTLESS_CARDS_DETECTED
+        case .contactless_failed_try_contact:
+            return .CONTACTLESS_FAILED_TRY_CONTACT
+        case .please_see_phone:
+            return .PLEASE_SEE_PHONE
         }
     }
     
@@ -204,6 +210,19 @@ class EnumerationUtil {
             return .RP350
         case .RP450:
             return .RP450
+        }
+    }
+    
+    class func TransactionState_toGoPendingPaymentState(state:OfflineTransactionState) -> GoPendingPaymentEntry.PendingPaymentState {
+        switch state {
+        case .failed:
+            return GoPendingPaymentEntry.PendingPaymentState.FAILED
+        case .pending:
+            return GoPendingPaymentEntry.PendingPaymentState.PENDING
+        case .unknown:
+            return GoPendingPaymentEntry.PendingPaymentState.UNKNOWN
+        case .inprogress:
+            return GoPendingPaymentEntry.PendingPaymentState.PROCESSING
         }
     }
     

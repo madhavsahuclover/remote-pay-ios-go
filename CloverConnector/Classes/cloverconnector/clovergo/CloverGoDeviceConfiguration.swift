@@ -19,6 +19,7 @@ public class CloverGoDeviceConfiguration : NSObject, CloverDeviceConfiguration {
     public var allowDuplicateTransaction:Bool = false
     public var deviceType : CLVModels.Device.GoDeviceType = .RP450
     public var enableLogs : Bool = false
+    public var enableQuickChip : Bool = false
     
     init(builder:Builder) {
         self.apiKey = builder.apiKey
@@ -29,6 +30,7 @@ public class CloverGoDeviceConfiguration : NSObject, CloverDeviceConfiguration {
         self.allowDuplicateTransaction = builder.allowDuplicateTransaction
         self.deviceType = builder.deviceType
         self.enableLogs = builder.enableLogs
+        self.enableQuickChip = builder.enableQuickChip
     }
     
     public class Builder {
@@ -41,6 +43,7 @@ public class CloverGoDeviceConfiguration : NSObject, CloverDeviceConfiguration {
         var allowDuplicateTransaction:Bool = false
         var deviceType : CLVModels.Device.GoDeviceType = .RP450
         var enableLogs : Bool = false
+        var enableQuickChip : Bool = false
         
         public init(apiKey:String, secret:String, env:CLVGoEnvironment) {
             self.apiKey = apiKey
@@ -70,6 +73,11 @@ public class CloverGoDeviceConfiguration : NSObject, CloverDeviceConfiguration {
         
         public func enableLogs(_ enableLogs:Bool) -> Builder {
             self.enableLogs = enableLogs
+            return self
+        }
+        
+        public func enableQuickChip(_ enableQuickChip:Bool) -> Builder {
+            self.enableQuickChip = enableQuickChip
             return self
         }
         

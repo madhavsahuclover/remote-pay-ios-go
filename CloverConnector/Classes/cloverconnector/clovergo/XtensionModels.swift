@@ -40,6 +40,10 @@ extension CLVModels.Payments {
         case CONTACTLESS_FAILED_TRY_AGAIN
         case SWIPE_DIP_OR_TAP_CARD
         case REMOVE_CARD
+        case PROCESSING_TRANSACTION
+        case MULTIPLE_CONTACTLESS_CARDS_DETECTED
+        case CONTACTLESS_FAILED_TRY_CONTACT
+        case PLEASE_SEE_PHONE
         
         public func getDescription() -> String {
             switch self {
@@ -65,6 +69,14 @@ extension CLVModels.Payments {
                 return "Transaction Started, Swipe or Dip or Tap Card"
             case .REMOVE_CARD:
                 return "Please Remove Card"
+            case .PROCESSING_TRANSACTION:
+                return "Processing Transaction"
+            case .MULTIPLE_CONTACTLESS_CARDS_DETECTED:
+                return "Multiple contactless cards detected. Please present only one"
+            case .PLEASE_SEE_PHONE:
+                return "Customer validation required. Please ask the customer to refer to their payment device for further assistance."
+            case .CONTACTLESS_FAILED_TRY_CONTACT:
+                return "Could not process the contactless payment. Please Swipe/Insert a card to proceed"
             }
         }
     }
@@ -125,3 +137,34 @@ extension CLVModels.Device {
         }
     }
 }
+
+public class GoPendingPaymentEntry : PendingPaymentEntry {
+    
+    public var orderId:String!
+    public var createdTime:Date!
+    public var failureReason : String?
+    public var state : PendingPaymentState = .UNKNOWN
+    
+    @objc public enum PendingPaymentState : Int {
+        case UNKNOWN
+        case PENDING
+        case FAILED
+        case PROCESSING
+        
+        public func toString() -> String {
+            switch self {
+            case .UNKNOWN:
+                return "UNKNOWN"
+            case .PENDING:
+                return "PENDING"
+            case .FAILED:
+                return "FAILED"
+            case .PROCESSING:
+                return "PROCESSING"
+            }
+        }
+    }
+    
+}
+
+

@@ -35,10 +35,13 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     
     var deviceReady = false
     
-    var lastTransactionRequest : TransactionRequest?
-    var lastTransactionResponse : TransactionResult?
+    var lastTransactionRequest : NSObject?
     
     var selectedPaymentMode : CLVModels.Payments.PaymentMode?
+    
+    public static let OfflinePaymentProcessingStarted : Notification = Notification.init(name: Notification.Name(rawValue:"OfflinePaymentProcessingStarted"))
+    
+    public static let OfflinePaymentProcessingCompleted : Notification = Notification.init(name: Notification.Name(rawValue:"OfflinePaymentProcessingCompleted"))
     
     public init(config:CloverGoDeviceConfiguration) {
         super.init()
@@ -63,7 +66,31 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
         CloverGo.remoteApplicationID = config.remoteApplicationID
         CloverGo.remoteApplicationVersion = config.remoteSourceSDK
         CloverGo.enableLogs(config.enableLogs)
+        CloverGo.enableQuickChip = config.enableQuickChip
+        
+        self.addNotificationObservers()
+        
         self.getMerchantInfo()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    private func addNotificationObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.offlineProcessingStarted), name: CloverGo.OfflinePaymentProcessingStarted.name, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.offlineProcessingCompleted), name: CloverGo.OfflinePaymentProcessingCompleted.name, object: nil)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func offlineProcessingStarted() {
+        Swift.print("***offlineProcessingStarted")
+        NotificationCenter.default.post(name: CloverGoConnector.OfflinePaymentProcessingStarted.name, object: self, userInfo: [:])
+    }
+    
+    @objc private func offlineProcessingCompleted() {
+        Swift.print("***offlineProcessingCompleted")
+        NotificationCenter.default.post(name: CloverGoConnector.OfflinePaymentProcessingCompleted.name, object: self, userInfo: [:])
     }
     
     /// This delegate method is for getting the merchant information
@@ -187,7 +214,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     /// - Parameters:
     ///   - transactionRequest: Object of TransactionRequest containing the request details
     ///   - delegate: Object of TransactionDelegate containing the transaction delegate methods
-    private func executeTransaction(transactionRequest:TransactionRequest) {
+    private func executeTransaction(transactionRequest:NSObject) {
         lastTransactionRequest = transactionRequest
         if transactionRequest is SaleRequest {
             transactionDelegate = TransactionDelegateImpl(connectorListener: self.connectorListener, transactionType: .purchase)
@@ -195,7 +222,12 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
             transactionDelegate = TransactionDelegateImpl(connectorListener: self.connectorListener, transactionType: .auth)
         } else if transactionRequest is PreAuthRequest {
             transactionDelegate = TransactionDelegateImpl(connectorListener: self.connectorListener, transactionType: .preauth)
+        } else if transactionRequest is ManualRefundRequest {
+            transactionDelegate = TransactionDelegateImpl(connectorListener: self.connectorListener, transactionType: .manualrefund)
+        } else if transactionRequest is VaultCardRequest {
+            transactionDelegate = TransactionDelegateImpl(connectorListener: self.connectorListener, transactionType: .tokenize)
         }
+        
         let paymentModes = self.getAvailablePaymentModes()
         if paymentModes.count > 1 {
             connectorListener?.onMultiplePaymentModesAvailable(paymentModes: paymentModes)
@@ -227,20 +259,32 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
             if let saleRequest = transactionRequest as? SaleRequest {
                 order!.tax = saleRequest.taxAmount ?? 0
                 order!.tip = saleRequest.tipAmount ?? 0
-                order!.addCustomItem(item: CustomItem(name: "Item 1", price: transactionRequest.amount - order!.tax, quantity: 1))
+                order!.addCustomItem(item: CustomItem(name: "Item 1", price: saleRequest.amount - order!.tax, quantity: 1))
                 order!.transactionType = .purchase
             } else if let authRequest = transactionRequest as? AuthRequest {
                 order!.tax = authRequest.taxAmount ?? 0
-                order!.addCustomItem(item: CustomItem(name: "Item 1", price: transactionRequest.amount - order!.tax, quantity: 1))
+                order!.addCustomItem(item: CustomItem(name: "Item 1", price: authRequest.amount - order!.tax, quantity: 1))
                 order!.tip = -1
                 order!.transactionType = .auth
-            } else if transactionRequest is PreAuthRequest {
-                order!.addCustomItem(item: CustomItem(name: "Item 1", price: transactionRequest.amount, quantity: 1))
+            } else if let preAuthRequest = transactionRequest as? PreAuthRequest {
+                order!.addCustomItem(item: CustomItem(name: "Item 1", price: preAuthRequest.amount, quantity: 1))
                 order!.transactionType = .preauth
                 order!.tax = -1
                 order!.tip = -1
+            } else if let manualReundRequest = transactionRequest as? ManualRefundRequest {
+                order!.addCustomItem(item: CustomItem(name: "Item 1", price: manualReundRequest.amount, quantity: 1))
+                order!.transactionType = .manualrefund
+                order!.tax = -1
+                order!.tip = -1
+            } else if transactionRequest is VaultCardRequest {
+                order!.addCustomItem(item: CustomItem(name: "Item 1", price: 1, quantity: 1))
+                order!.transactionType = .tokenize
+                order!.tax = -1
+                order!.tip = -1
             }
-            order!.externalPaymentId = transactionRequest.externalId
+            if let transactionRequest = transactionRequest as? TransactionRequest {
+                order!.externalPaymentId = transactionRequest.externalId
+            }
         }
         return order
     }
@@ -274,6 +318,16 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
                 preAuthResponse.reason = reason
                 preAuthResponse.message = message
                 connectorListener?.onPreAuthResponse(preAuthResponse)
+            } else if transactionRequest is ManualRefundRequest {
+                let manualRefundResponse = ManualRefundResponse(success: false, result: .ERROR)
+                manualRefundResponse.reason = reason
+                manualRefundResponse.message = message
+                connectorListener?.onManualRefundResponse(manualRefundResponse)
+            } else if transactionRequest is VaultCardRequest {
+                let vaultCardResponse = VaultCardResponse(success: false, result: .ERROR)
+                vaultCardResponse.reason = reason
+                vaultCardResponse.message = message
+                connectorListener?.onVaultCardResponse(vaultCardResponse)
             }
         }
     }
@@ -421,7 +475,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     /// This delegate method is called when the card reader is undergoing a reader reset
     ///
     /// - Parameter event: Gives the details about the CardReaderEvent during reader reset process
-    public func onReaderResetProgress(event: CardReaderEvent) {
+    public func onReaderResetProgress(event: CardReaderInitializationEvent) {
         debugPrint("Reader reset is in progress - \(event.toString())")
     }
     
@@ -477,8 +531,12 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
      * Request to vault a card.
      */
     public func  vaultCard ( _ vaultCardRequest:VaultCardRequest ) -> Void {
-        debugPrint("Not supported with CloverGo Connector")
-        connectorListener?.onVaultCardResponse(VaultCardResponse(success: false, result: ResultCode.UNSUPPORTED))
+        resetState()
+        if merchantInfo?.supportsVaultCards != nil && !(merchantInfo?.supportsVaultCards)! {
+            connectorListener?.onVaultCardResponse(VaultCardResponse(success: false, result: ResultCode.UNSUPPORTED))
+        } else {
+            executeTransaction(transactionRequest: vaultCardRequest)
+        }
     }
     
     
@@ -579,10 +637,40 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     }
     
     public func retrievePendingPayments() -> Void {
-        debugPrint("Not supported with CloverGo Connector")
-        let response = RetrievePendingPaymentsResponse(code: .UNSUPPORTED, message: "Not Supported", payments: nil)
-        response.success = false
-        connectorListener?.onRetrievePendingPaymentsResponse(response)
+        cloverGo.getOfflineTransactionHistory { (transactions) in
+            if let transactions = transactions {
+                var pendingPayments = [GoPendingPaymentEntry]()
+                for txn in transactions {
+                    let pendingPayment = GoPendingPaymentEntry()
+                    pendingPayment.createdTime = txn.createdTime
+                    pendingPayment.failureReason = txn.failureReason
+                    pendingPayment.orderId = txn.orderId
+                    pendingPayment.state = EnumerationUtil.TransactionState_toGoPendingPaymentState(state: txn.offlineState)
+                    pendingPayment.paymentId = txn.paymentId
+                    pendingPayment.amount = txn.amount
+                    pendingPayments.append(pendingPayment)
+                }
+               let response = RetrievePendingPaymentsResponse(code: .SUCCESS, message: "Success", payments: pendingPayments)
+                self.connectorListener?.onRetrievePendingPaymentsResponse(response)
+                
+            } else {
+                let response = RetrievePendingPaymentsResponse(code: .FAIL, message: "No Pending Payments Found", payments: nil)
+                self.connectorListener?.onRetrievePendingPaymentsResponse(response)
+            }
+        }
+        
+    }
+    
+    public func retrievePendingPaymentStats() -> Void {
+        cloverGo.getOfflineStats { (offlineStats) in
+            let response = RetrievePendingPaymentsStatsResponse(code: .SUCCESS, message: "Pending Payment Stats retrieved")
+            response.totalPaymentAmount = offlineStats.totalAmount
+            response.totalPaymentCount = offlineStats.totalTransactionCount
+            response.failedPaymentCount = offlineStats.failedTransactionCount
+            response.pendingPaymentCount = offlineStats.pendingTransactionCount
+            response.noOfDaysOffline = offlineStats.noOfDaysOffline
+            self.connectorListener?.onRetrievePendingPaymentStats(response: response)
+        }
     }
     
     public func dispose() -> Void {
@@ -596,8 +684,12 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
      * Request an amount be refunded.
      */
     public func  manualRefund ( _ manualRefundRequest:ManualRefundRequest ) -> Void{
-        debugPrint("Not supported with CloverGo Connector")
-        connectorListener?.onManualRefundResponse(ManualRefundResponse(success: false, result: ResultCode.UNSUPPORTED))
+        resetState()
+        if merchantInfo?.supportsManualRefunds != nil && !(merchantInfo?.supportsManualRefunds)! {
+            connectorListener?.onManualRefundResponse(ManualRefundResponse(success: false, result: ResultCode.UNSUPPORTED))
+        } else {
+            executeTransaction(transactionRequest: manualRefundRequest)
+        }
     }
     
     /// This delegate method is used to select an Aid to proceed with in case of multiple Aid
@@ -694,6 +786,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     public func sendMessageToActivity(_ request: MessageToActivity) {
         debugPrint("Not supported with CloverGo Connector")
     }
+
 }
 
 class TransactionDelegateImpl : NSObject, TransactionDelegate {
@@ -716,7 +809,7 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
     /// This delegate method is called when there is any event with the card reader after the transaction is started
     ///
     /// - Parameter event: Gives the details about the CardReaderEvent during the transaction
-    func onProgress(event: CardReaderEvent) {
+    func onProgress(event: TransactionEvent) {
         if let transactionEvent = EnumerationUtil.CardReaderEvent_toGoReaderTransactionEvent(event: event) {
             self.connectorListener?.onTransactionProgress(event: transactionEvent)
         }
@@ -727,20 +820,30 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
     /// - Parameter error: CloverGoError containing the error details
     func onError(error: CloverGoError) {
         if transactionType == CLVGoTransactionType.purchase {
-            let saleResponse = SaleResponse(success: false, result: ResultCode.FAIL)
+            let saleResponse = SaleResponse(success: false, result: .FAIL)
             saleResponse.reason = error.code
             saleResponse.message = error.message
             connectorListener?.onSaleResponse(saleResponse)
         } else if transactionType == CLVGoTransactionType.auth {
-            let authResponse = AuthResponse(success: false, result: ResultCode.FAIL)
+            let authResponse = AuthResponse(success: false, result: .FAIL)
             authResponse.reason = error.code
             authResponse.message = error.message
             connectorListener?.onAuthResponse(authResponse)
         } else if transactionType == CLVGoTransactionType.preauth {
-            let preAuthResponse = PreAuthResponse(success: false, result: ResultCode.FAIL)
+            let preAuthResponse = PreAuthResponse(success: false, result: .FAIL)
             preAuthResponse.reason = error.code
             preAuthResponse.message = error.message
             connectorListener?.onPreAuthResponse(preAuthResponse)
+        } else if transactionType == CLVGoTransactionType.manualrefund {
+            let manualRefundResponse = ManualRefundResponse(success: false, result: .FAIL)
+            manualRefundResponse.reason = error.code
+            manualRefundResponse.message = error.message
+            connectorListener?.onManualRefundResponse(manualRefundResponse)
+        } else if transactionType == CLVGoTransactionType.tokenize {
+            let vaultCardResponse = VaultCardResponse(success: false, result: .FAIL)
+            vaultCardResponse.reason = error.code
+            vaultCardResponse.message = error.message
+            connectorListener?.onVaultCardResponse(vaultCardResponse)
         }
     }
     
@@ -753,13 +856,32 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
         if cvmResult == .SIGNATURE {
             connectorListener?.onSignatureRequired()
         } else {
-            connectorListener?.onSendReceipt()
+            if transactionType != .tokenize {
+                connectorListener?.onSendReceipt()
+            } else {
+                self.sendTransactionResponse()
+            }
         }
         
     }
     
     func sendTransactionResponse() {
         if let transactionResponse = lastTransactionResult {
+            
+            let order = CLVModels.Base.Reference()
+            order.id = transactionResponse.orderId
+            
+            let cardTransaction = CLVModels.Payments.CardTransaction()
+            cardTransaction.authCode = transactionResponse.authCode
+            cardTransaction.type_ = EnumerationUtil.CardTransactionType_toEnum(type: transactionResponse.transactionType ?? "")
+            cardTransaction.cardType = EnumerationUtil.CardType_toEnum(type: transactionResponse.cardType ?? "")
+            cardTransaction.entryType = EnumerationUtil.CardEntryType_toEnum(type: transactionResponse.mode ?? "")
+            if let maskedCardNo = transactionResponse.maskedCardNo {
+                cardTransaction.first6 = String(maskedCardNo.prefix(6))
+                cardTransaction.last4 = String(maskedCardNo.suffix(4))
+            }
+            cardTransaction.cardholderName = transactionResponse.cardHolderName
+            
             let payment = CLVModels.Payments.Payment()
             payment.id = transactionResponse.transactionId
             payment.amount = transactionResponse.amountCharged
@@ -767,19 +889,9 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
             payment.tipAmount = transactionResponse.tipAmount
             payment.externalPaymentId = transactionResponse.externalPaymentId
             
-            payment.order = CLVModels.Base.Reference()
-            payment.order?.id = transactionResponse.orderId
+            payment.order = order
+            payment.cardTransaction = cardTransaction
             
-            payment.cardTransaction = CLVModels.Payments.CardTransaction()
-            payment.cardTransaction?.authCode = transactionResponse.authCode
-            payment.cardTransaction?.type_ = EnumerationUtil.CardTransactionType_toEnum(type: transactionResponse.transactionType ?? "")
-            payment.cardTransaction?.cardType = EnumerationUtil.CardType_toEnum(type: transactionResponse.cardType ?? "")
-            payment.cardTransaction?.entryType = EnumerationUtil.CardEntryType_toEnum(type: transactionResponse.mode ?? "")
-            if let maskedCardNo = transactionResponse.maskedCardNo {
-                payment.cardTransaction?.first6 = String(maskedCardNo.prefix(6))
-                payment.cardTransaction?.last4 = String(maskedCardNo.suffix(4))
-            }
-            payment.cardTransaction?.cardholderName = transactionResponse.cardHolderName
             
             if transactionType == CLVGoTransactionType.purchase {
                 let response = SaleResponse(success: true, result: ResultCode.SUCCESS)
@@ -796,6 +908,29 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
                 payment.result = CLVModels.Payments.Result.AUTH
                 response.payment = payment
                 connectorListener?.onPreAuthResponse(response)
+            } else if transactionType == CLVGoTransactionType.manualrefund {
+                let credit = CLVModels.Payments.Credit()
+                credit.amount = transactionResponse.amountCharged
+                credit.id = transactionResponse.transactionId
+                credit.taxAmount = transactionResponse.taxAmount
+                let orderRef = CLVModels.Order.Order()
+                orderRef.id = transactionResponse.orderId
+                credit.orderRef = orderRef
+                credit.cardTransaction = cardTransaction
+                let response = ManualRefundResponse(success: true, result: ResultCode.SUCCESS, credit: credit)
+                connectorListener?.onManualRefundResponse(response)
+            } else if transactionType == CLVGoTransactionType.tokenize {
+                let vaultCardResponse = VaultCardResponse(success: true, result: .SUCCESS)
+                let vaultedCard = CLVModels.Payments.VaultedCard()
+                vaultedCard.cardholderName = transactionResponse.cardHolderName
+                vaultedCard.expirationDate = transactionResponse.expirationDate
+                if let maskedCardNo = transactionResponse.maskedCardNo {
+                    vaultedCard.first6 = String(maskedCardNo.prefix(6))
+                    vaultedCard.last4 = String(maskedCardNo.suffix(4))
+                }
+                vaultedCard.token = transactionResponse.token
+                vaultCardResponse.card = vaultedCard
+                connectorListener?.onVaultCardResponse(vaultCardResponse)
             }
         }
     }
@@ -805,7 +940,7 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
     /// - Parameters:
     ///   - event: TransactionEvent object
     ///   - proceedOnErrorDelegate: ProceedOnError delegate
-    func proceedOnError(event: TransactionEvent, proceedOnErrorDelegate: ProceedOnError) {
+    func proceedOnError(event: TransactionErrorEvent, proceedOnErrorDelegate: ProceedOnError) {
         
         var challenges : [Challenge] = []
         switch event {
@@ -824,7 +959,22 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
             challenge.message = "AVS Verification Failed"
             challenge.type = ChallengeType.AVS_FAILURE_CHALLENGE
             challenges.append(challenge)
-        default:()
+        case .offline:
+            let challenge = Challenge()
+            challenge.message = "Device is Offline"
+            challenge.type = ChallengeType.OFFLINE_CHALLENGE
+            challenges.append(challenge)
+        case .offline_threshold_limit_exceeded:
+            let challenge = Challenge()
+            challenge.message = "Payment threshold limit exceeded"
+            challenge.type = ChallengeType.OFFLINE_THRESHOLD_LIMIT_EXCEEDED_CHALLENGE
+            challenges.append(challenge)
+        case .cvv_failure:
+            let challenge = Challenge()
+            challenge.message = "CVV Mismatch"
+            challenge.type = ChallengeType.CVV_MISMATCH_CHALLENGE
+            challenges.append(challenge)
+        
         }
         let confirmPaymentRequest = ConfirmPaymentRequest()
         confirmPaymentRequest.challenges = challenges

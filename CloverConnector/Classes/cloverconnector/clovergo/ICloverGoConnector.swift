@@ -54,4 +54,7 @@ public protocol ICloverGoConnector : ICloverConnector {
     func selectPaymentMode(paymentMode:CLVModels.Payments.PaymentMode)
     
     func processKeyedTransaction(keyedCardData : CLVModels.Payments.KeyedCardData)
+    
+    func retrievePendingPaymentStats() -> Void
+    
 }
