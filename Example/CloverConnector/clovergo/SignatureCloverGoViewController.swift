@@ -28,7 +28,13 @@ class SignatureCloverGoViewController: UIViewController, SignatureViewDelegate {
     
     func setSigningBox() {
         let x = CGFloat((self.signLabel?.frame.origin.x)!)
-        let y = CGFloat((self.signLabel?.frame.origin.y)! + 100)
+        var y = CGFloat((self.signLabel?.frame.origin.y)!)
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) && UIScreen.main.traitCollection.userInterfaceIdiom == .phone{
+            y = y - 100
+        }
+        else{
+            y = y + 100
+        }
         let width = CGFloat((self.signLabel?.frame.size.width)!)
         let height = CGFloat(250)
         self.signingBox = SignatureCaptureView(frame: CGRect(x: x, y: y, width: width, height: height))
@@ -36,7 +42,13 @@ class SignatureCloverGoViewController: UIViewController, SignatureViewDelegate {
         self.signingBox.delegate = self
         self.signingBox.enableEraseSignatureOnLongPress(enable: true)
         var frame = self.signingBox.frame
-        frame.origin.y = frame.origin.y + frame.size.height + 50
+        frame.origin.y = frame.origin.y + frame.size.height
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) && UIScreen.main.traitCollection.userInterfaceIdiom == .phone{
+            frame.origin.y = frame.origin.y + 5
+        }
+        else{
+            frame.origin.y = frame.origin.y + 50
+        }
         frame.size.height = 49
         self.doneButton = UIButton(frame: frame)
         self.doneButton.addTarget(self, action: #selector(self.doneClicked), for: .touchUpInside)
@@ -80,8 +92,11 @@ class SignatureCloverGoViewController: UIViewController, SignatureViewDelegate {
 
     }
     
-    
     func isSignaturePresent(valid: Bool) {
         self.doneButton.isHidden = !valid
+    }
+    
+    override open var shouldAutorotate: Bool {
+        return false
     }
 }

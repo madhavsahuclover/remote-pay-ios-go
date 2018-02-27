@@ -16,6 +16,7 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
     @IBOutlet weak var labelConnect350: UILabel!
     @IBOutlet weak var labelConnect450: UILabel!
     @IBOutlet weak var buttonKeyed: UIButton!
+    @IBOutlet weak var enableQuickChip: UISwitch!
     
     var cloverConnector350Reader : ICloverConnector?
     var cloverConnector450Reader : ICloverConnector?
@@ -38,14 +39,14 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
         {
             if(((PARAMETERS.accessToken) != nil) && ((PARAMETERS.apiKey) != nil) && ((PARAMETERS.secret) != nil))
             {
-                let config350Reader : CloverGoDeviceConfiguration = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .sandbox).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).deviceType(.RP350).enableLogs(true).build()
                 
-                config350Reader.remoteApplicationID = "com.test.unified.sdk"
-//                config350Reader.remoteSourceSDK = "1.4.0"
+                let config350Reader : CloverGoDeviceConfiguration = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .test).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(false).deviceType(.RP350).enableLogs(true).enableQuickChip(enableQuickChip.isOn).build()
                 
                 cloverConnector350Reader = CloverGoConnector(config: config350Reader)
                 
                 cloverConnectorListener = CloverGoConnectorListener(cloverConnector: cloverConnector350Reader!)
+                
+                (cloverConnectorListener as? CloverGoConnectorListener)?.addNotificationObservers()
                 
                 (cloverConnector350Reader as? CloverGoConnector)?.addCloverGoConnectorListener(cloverConnectorListener: (cloverConnectorListener as? ICloverGoConnectorListener)!)
                 (UIApplication.shared.delegate as! AppDelegate).cloverConnectorListener = cloverConnectorListener
@@ -76,12 +77,14 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
             if(((PARAMETERS.accessToken) != nil) && ((PARAMETERS.apiKey) != nil) && ((PARAMETERS.secret) != nil))
             {
 
-                let config450Reader = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .sandbox).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).enableLogs(true).build()
-                config450Reader.remoteApplicationID = "com.test.unified.sdk"
-//                config450Reader.remoteSourceSDK = "1.4.0"
+                let config450Reader = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .test).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(false).enableLogs(true).enableQuickChip(enableQuickChip.isOn).build()
+
                 cloverConnector450Reader = CloverGoConnector(config: config450Reader)
                 
                 cloverConnectorListener = CloverGoConnectorListener(cloverConnector: cloverConnector450Reader!)
+                
+                (cloverConnectorListener as? CloverGoConnectorListener)?.addNotificationObservers()
+                
                 (cloverConnector450Reader as? CloverGoConnector)?.addCloverGoConnectorListener(cloverConnectorListener: (cloverConnectorListener as? ICloverGoConnectorListener)!)
                 (UIApplication.shared.delegate as! AppDelegate).cloverConnectorListener = cloverConnectorListener
                 (UIApplication.shared.delegate as! AppDelegate).cloverConnector = cloverConnector450Reader
@@ -106,11 +109,13 @@ class ReaderSetUpViewController: UIViewController, StartTransactionDelegate {
     @IBAction func action_skipButton(sender: AnyObject)
     {
         
-        let defaultConfig = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .sandbox).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(true).build()
+        let defaultConfig = CloverGoDeviceConfiguration.Builder(apiKey: PARAMETERS.apiKey!, secret: PARAMETERS.secret!, env: .test).accessToken(PARAMETERS.accessToken!).allowAutoConnect(true).allowDuplicateTransaction(false).enableLogs(true).build()
         cloverConnector450Reader = CloverGoConnector(config: defaultConfig)
         
         cloverConnectorListener = CloverGoConnectorListener(cloverConnector: cloverConnector450Reader!)
+        
         (cloverConnector450Reader as? CloverGoConnector)?.addCloverGoConnectorListener(cloverConnectorListener: (cloverConnectorListener as? ICloverGoConnectorListener)!)
+        (cloverConnectorListener as? CloverGoConnectorListener)?.addNotificationObservers()
         (UIApplication.shared.delegate as! AppDelegate).cloverConnectorListener = cloverConnectorListener
         (UIApplication.shared.delegate as! AppDelegate).cloverConnector = cloverConnector450Reader
         nextVC()

@@ -320,15 +320,16 @@ public class CloverConnectorListener : NSObject, ICloverConnectorListener, UIAle
                 if let store = strongSelf.store {
                     for payment in store.preAuths {
                         if payment.paymentId == response.paymentId && store.currentOrder != nil {
-                            let paymentAmount = payment.amount
+//                            let paymentAmount = payment.amount
+                            let paymentAmount = response.amount
                             store.removePreAuth(payment)
                             store.addPaymentToOrder(payment, order: store.currentOrder!)
                             payment.status = PaymentStatus.AUTHORIZED
-                            payment.amount = paymentAmount
+                            payment.amount = paymentAmount!
                             strongSelf.showMessage("Sale successful processing using Pre Authorization")
                             store.newOrder()
                         }
-                        break;
+//                        break;
                     }
                 } else {
                     strongSelf.showMessage("Couldn't get store!")
@@ -570,7 +571,8 @@ public class CloverConnectorListener : NSObject, ICloverConnectorListener, UIAle
     
     public func onDeviceDisconnected() {
         if ready {
-            showMessage("Disconnected", duration: 2)
+            let disconnectedNotificationName = Notification.Name(rawValue: disconnectedNotificationKey)
+            NotificationCenter.default.post(name: disconnectedNotificationName, object: nil)
         }
         ready = false
     }

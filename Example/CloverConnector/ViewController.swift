@@ -12,7 +12,7 @@ import Intents
 import AVKit
 import AVFoundation
 
-class ViewController: UIViewController, OAuthDelegate {
+class ViewController: UIViewController {
 
     @IBOutlet var connectButton: UIButton!
     @IBOutlet var endpointTextField: UITextField!
@@ -150,64 +150,23 @@ class ViewController: UIViewController, OAuthDelegate {
     func selectDemoMode()
     {
         
-        PARAMETERS.accessToken = "0a7637b3-66eb-623c-7d9b-2acfb90d8237"
+        PARAMETERS.accessToken = "7a118a9c-428c-b33b-7c28-0638c893a7bf"//"0a7637b3-66eb-623c-7d9b-2acfb90d8237"
         PARAMETERS.apiKey = "Lht4CAQq8XxgRikjxwE71JE20by5dzlY"
         PARAMETERS.secret = "7ebgf6ff8e98d1565ab988f5d770a911e36f0f2347e3ea4eb719478c55e74d9g"
         
-        showNextVC()
+        showNextVC(storyboardID: "readerSetUpViewControllerID")
     }
     
     func selectOAuthMode()
     {
-        
-        let secondViewController: AppDelegate = UIApplication.shared.delegate as! AppDelegate
-        secondViewController.delegate = self
-        
-        let url = NSURL(string: "https://stg1.dev.clover.com/oauth/authorize?client_id=1AST2ETARGG7C&response_type=code")
-        if UIApplication.shared.canOpenURL(url! as URL) {
-            if #available(iOS 10.0, *) {
-                UIApplication.shared.open(url! as URL, options: [:], completionHandler: { (success) in
-                    print("Open url : \(success)")
-                })
-            } else {
-                // Fallback on earlier versions
-                let success = UIApplication.shared.openURL(url! as URL)
-                print("Open url : \(success)")
-            }
-        }
+        self.showNextVC(storyboardID: "oauthViewControllerID")
     }
     
-    /// Initializes the SDK with access token received after entering the credentials for OAuth
-    ///
-    /// - Parameter accessTokenReceived: access token received from the OAuth request
-    func initSDKWithOAuth(accessTokenReceived: String)
-    {
-        // MARK: Note
-        // Reach out to the CloverGo team for getting apiKey: and secret: for Sandbox env and set the values of kApiKey and kSecret constants respectively
-        SHARED.workingQueue.async() {
-            Thread.sleep(forTimeInterval: 1)
-            DispatchQueue.main.async {
-                self.showMessage("Received Access Token \n to \n initalize the SDK")
-            }
-        }
-        SHARED.workingQueue.async() {
-            Thread.sleep(forTimeInterval: 1)
-            DispatchQueue.main.async {
-                PARAMETERS.accessToken = accessTokenReceived
-//                PARAMETERS.apiKey = "2pd4rquS3Lic1rbs46e4d6lsGJ2rzy8D"
-//                PARAMETERS.secret = "9cert0ff8e76r4565ab988f5d986a911e36f0f2347e3fv3eb719478c98e89io0"
-                PARAMETERS.apiKey = "Lht4CAQq8XxgRikjxwE71JE20by5dzlY"
-                PARAMETERS.secret = "7ebgf6ff8e98d1565ab988f5d770a911e36f0f2347e3ea4eb719478c55e74d9g"
-                self.showNextVC()
-            }
-        }
-    }
-    
-    func showNextVC()
+    func showNextVC(storyboardID:String)
     {
         let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
         
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "readerSetUpViewControllerID") as! ReaderSetUpViewController
+        let nextViewController = storyBoard.instantiateViewController(withIdentifier: storyboardID)
         self.present(nextViewController, animated:true, completion:nil)
     }
     

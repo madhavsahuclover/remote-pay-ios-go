@@ -9,9 +9,6 @@
 import Foundation
 import GoConnector
 
-protocol OAuthDelegate{
-    func initSDKWithOAuth(accessTokenReceived: String)
-}
 
 protocol SignatureViewDelegate {
     func isSignaturePresent(valid: Bool)
@@ -39,3 +36,7 @@ struct SHARED {
     static var delegateStartTransaction:StartTransactionDelegate? = nil
 }
 
+struct OFFLINETX {
+    static var retrievePendingPaymentsResponseObj: RetrievePendingPaymentsResponse? = nil
+    static var retrievePendingPaymentsStatsObj: RetrievePendingPaymentsStatsResponse? = nil
+}

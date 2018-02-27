@@ -118,6 +118,11 @@ class OrdersTableViewController : UITableViewController, POSStoreListener, POSOr
         let selItem = items[indexPath.row]
         if selItem.type == .order {
             selOrder = selItem.data as? POSOrder
+            if selOrder?.status.rawValue == "OPEN"
+            {
+                let store = self.store
+                store!.currentOrder = selOrder
+            }
             tableView.reloadData()
         } else if selItem.type == .payment {
             debugPrint("selected payment")
@@ -141,9 +146,11 @@ class OrdersTableViewController : UITableViewController, POSStoreListener, POSOr
                         let rpr = RefundPaymentRequest(orderId: payment.orderId, paymentId: payment.paymentId, fullRefund: true)
                         self.cloverConnector?.refundPayment(rpr)
                     }))
-                    fullRefundAC.addAction(UIAlertAction(title: "Partial", style: .cancel, handler: { (aa) in
+                    fullRefundAC.addAction(UIAlertAction(title: "Partial", style: .default, handler: { (aa) in
                         let rpr = RefundPaymentRequest(orderId: payment.orderId, paymentId: payment.paymentId, amount: payment.amount / 2)
                         self.cloverConnector?.refundPayment(rpr)
+                    }))
+                    fullRefundAC.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (aa) in
                     }))
                     self.present(fullRefundAC, animated: true, completion: nil)
                 }))

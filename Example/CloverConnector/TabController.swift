@@ -10,12 +10,18 @@ import Foundation
 import UIKit
 import GoConnector
 
-class TabBarController : UITabBarController {
+class TabBarController : UITabBarController, UITabBarControllerDelegate {
     
+    let keyTabOrder = "keyTabOrder"
+
     override func viewDidLoad() {
         if let cc = (UIApplication.shared.delegate as? AppDelegate)?.cloverConnector {
             cc.addCloverConnectorListener(ConnectionListener(cloverConnector: cc, tabBar: self))
         }
+        
+        self.delegate = self
+        setTagsForTabBarItems()
+        getTabBarItemsOrder()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -58,6 +64,41 @@ class TabBarController : UITabBarController {
         
         override func onVerifySignatureRequest(_ signatureVerifyRequest: VerifySignatureRequest) {
             // override to do nothing in this instance
+        }
+    }
+    
+    func tabBarController(_ tabBarController: UITabBarController, didEndCustomizing viewControllers: [UIViewController], changed: Bool) {
+        var orderedTagItems = [Int]()
+        if changed {
+            for viewController in viewControllers {
+                let tag = viewController.tabBarItem.tag
+                orderedTagItems.append(tag)
+            }
+            UserDefaults.standard.set(orderedTagItems, forKey: keyTabOrder)
+        }
+    }
+    
+    
+    func setTagsForTabBarItems() {
+        var tag = 0
+        if let viewControllers = viewControllers {
+            for view in viewControllers {
+                view.tabBarItem.tag = tag
+                tag += 1
+            }
+        }
+    }
+    
+    
+    func getTabBarItemsOrder() {
+        var newViewControllerOrder = [UIViewController]()
+        if let initialViewControllers = viewControllers {
+            if let tabBarOrder = UserDefaults.standard.object(forKey: keyTabOrder) as? [Int] {
+                for tag in tabBarOrder {
+                    newViewControllerOrder.append(initialViewControllers[tag])
+                }
+                setViewControllers(newViewControllerOrder, animated: false)
+            }
         }
     }
 }

@@ -11,13 +11,32 @@ import GoConnector
 
 class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorListener, UITextFieldDelegate {
     
+    var merchantInfo : MerchantInfo?
+    
     func onSendReceipt() {
         
-        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
-        while ((topController.presentedViewController) != nil) {
-            topController = topController.presentedViewController!
+//        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
+//        while ((topController.presentedViewController) != nil) {
+//            topController = topController.presentedViewController!
+//        }
+        if let ac = self.viewController?.presentedViewController as? UIAlertController {
+            if !ac.isBeingDismissed && !ac.isBeingPresented {
+                ac.dismiss(animated: true, completion: {
+                    self.showReceiptAlertController()
+                })
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.01, execute: {
+                    self.showReceiptAlertController()
+                })
+            }
+        } else {
+            self.showReceiptAlertController()
         }
         
+        
+    }
+    
+    func showReceiptAlertController() {
         let alertController = UIAlertController(title: "Send Receipt \nTo", message: "email / phone number", preferredStyle: .alert)
         alertController.addTextField {(textField:UITextField) -> Void in
             textField.placeholder = NSLocalizedString("ra.dummy@xyz.com", comment: "email")
@@ -32,18 +51,18 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             let phone = alertController.textFields?.last!
             ((UIApplication.shared.delegate as! AppDelegate).cloverConnector as? CloverGoConnector)?.sendReceipt(email: email?.text, phone: phone?.text)
             self.nextVC()
-//            topController.dismiss(animated: true, completion: nil)
+            //            topController.dismiss(animated: true, completion: nil)
         })
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .default, handler: {(action: UIAlertAction) -> Void in
             ((UIApplication.shared.delegate as! AppDelegate).cloverConnector as? CloverGoConnector)?.sendReceipt(email: nil, phone: nil)
             self.nextVC()
-//            topController.dismiss(animated: true, completion: nil)
+            //            topController.dismiss(animated: true, completion: nil)
         })
         
         alertController.addAction(cancelAction)
         alertController.addAction(okAction)
-
-        topController.present(alertController, animated:true, completion:nil)
+        
+        self.viewController?.present(alertController, animated:true, completion:nil)
     }
     
     func nextVC() {
@@ -79,11 +98,11 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             (action:UIAlertAction) in
             
         }))
-        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
-        while ((topController.presentedViewController) != nil) {
-            topController = topController.presentedViewController!
-        }
-        topController.present(choiceAlert, animated:true, completion:nil)
+//        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
+//        while ((topController.presentedViewController) != nil) {
+//            topController = topController.presentedViewController!
+//        }
+        self.viewController?.present(choiceAlert, animated:true, completion:nil)
     }
     
     func onDevicesDiscovered(devices:[CLVModels.Device.GoDeviceInfo]) ->Void {
@@ -121,12 +140,17 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
         
         switch event
         {
-        case .EMV_CARD_INSERTED,.CARD_SWIPED,.CARD_TAPPED:
-            showMessage("Processing Transaction", duration: 1)
+        case .EMV_CARD_INSERTED:
+            showMessage("Keep Card Inserted", duration: 1)
             break
-            
+        case .CARD_SWIPED:
+            showMessage("Card Swiped - Processing Transaction", duration: 1)
+        case .CARD_TAPPED:
+            showMessage("Card Tapped - Processing Transaction", duration: 1)
+        case .PROCESSING_TRANSACTION:
+            showMessage("Processing Transaction", duration: 1)
         case .EMV_CARD_REMOVED:
-            showMessage("Card removed", duration: 1)
+//            showMessage("Card removed", duration: 1)
             break
             
         case .EMV_CARD_DIP_FAILED:
@@ -154,22 +178,38 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             break
         case .REMOVE_CARD:
             showMessage("Please Remove Card from Reader", duration: 1)
+        case .CONTACTLESS_FAILED_TRY_CONTACT:
+            showMessage(event.getDescription(), duration: 2)
+        case .MULTIPLE_CONTACTLESS_CARDS_DETECTED:
+            showMessage(event.getDescription(), duration: 2)
+        case .PLEASE_SEE_PHONE:
+            showMessage(event.getDescription(), duration: 2)
             
-        default:
-            break;
         }
     }
     
-    @objc private func dismissMessage1(_ view:UIAlertView) {
-        view.dismiss( withClickedButtonIndex: -1, animated: true);
+    @objc private func dismissMessage1(_ alertController:UIAlertController) {
+        if let presentedViewController = self.viewController?.presentedViewController as? UIAlertController {
+            if presentedViewController.message == alertController.message && presentedViewController.title == alertController.title {
+                presentedViewController.dismiss(animated: false, completion: nil)
+            } else {
+                alertController.dismiss(animated: false, completion: nil)
+            }
+        }
     }
     
     private func showMessage(_ message:String, duration:Int = 3) {
-        
         DispatchQueue.main.async {
-            let alertView:UIAlertView = UIAlertView(title: nil, message: message, delegate: nil, cancelButtonTitle: nil)
-            alertView.show()
-            self.perform(#selector(self.dismissMessage1), with: alertView, afterDelay: TimeInterval(duration))
+            if let vc = self.viewController {
+                var vuController = vc
+                while( (vuController.presentedViewController != nil) &&
+                    vuController != vuController.presentedViewController ){
+                        vuController = vuController.presentedViewController ?? vc
+                }
+                let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
+                vuController.present(alertController, animated: false, completion: nil)
+                self.perform(#selector(self.dismissMessage1), with: alertController, afterDelay: TimeInterval(duration))
+            }
         }
     }
     
@@ -183,6 +223,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     
     override func onDeviceReady(_ merchantInfo: MerchantInfo) {
         super.onDeviceReady(merchantInfo)
+        self.merchantInfo = merchantInfo
         DispatchQueue.main.async {
             SHARED.delegateStartTransaction?.proceedAfterReaderReady(merchantInfo: merchantInfo)
         }
@@ -231,12 +272,22 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             textField.tag = 3
             textField.delegate = self
         }
+
+        alertController.addTextField {(textField:UITextField) -> Void in
+                textField.placeholder = NSLocalizedString("ZipCode", comment: "ZipCode")
+                textField.keyboardType = .numberPad
+                textField.tag = 4
+                textField.delegate = self
+        }
         
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK action"), style: .default, handler: {(action: UIAlertAction) -> Void in
             let cardNo = alertController.textFields?[0].text ?? ""
             let cvv = alertController.textFields?[1].text ?? ""
             let expiryDate = alertController.textFields?[2].text ?? ""
+            let zipCode = alertController.textFields?[3].text ?? ""
             let keyedCardData = CLVModels.Payments.KeyedCardData(cardNumber: cardNo, expirationDate: expiryDate, cvv: cvv)
+            keyedCardData.zipCode = zipCode
+            keyedCardData.cardPresent = true
             ((UIApplication.shared.delegate as! AppDelegate).cloverConnector as? CloverGoConnector)?.processKeyedTransaction(keyedCardData: keyedCardData)
         })
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .default, handler: {(action: UIAlertAction) -> Void in
@@ -261,7 +312,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             }
             if textField.tag == 2 {
                 if let text = textField.text {
-                    if text.characters.count >= 3 {
+                    if text.characters.count >= 4 {
                         return false
                     }
                 } else {
@@ -277,9 +328,42 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
                     return true
                 }
             }
-            
+            if textField.tag == 4 {
+                if let text = textField.text {
+                    if text.characters.count >= 6 {
+                        return false
+                    }
+                } else {
+                    return true
+                }
+            }
         }
         return true
     }
+    
+    override func onRetrievePendingPaymentsResponse(_ retrievePendingPaymentResponse: RetrievePendingPaymentsResponse) {
+        OFFLINETX.retrievePendingPaymentsResponseObj = retrievePendingPaymentResponse
+    }
+    
+    func onRetrievePendingPaymentStats(response: RetrievePendingPaymentsStatsResponse) {
+        OFFLINETX.retrievePendingPaymentsStatsObj = response
+        
+        let name = Notification.Name(rawValue: offlineNotificationKey)
+        NotificationCenter.default.post(name: name, object: nil)
+    }
+    
+    func addNotificationObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.offlineProcessingStarted), name: CloverGoConnector.OfflinePaymentProcessingStarted.name, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.offlineProcessingCompleted), name: CloverGoConnector.OfflinePaymentProcessingCompleted.name, object: nil)
+    }
+    
+    @objc private func offlineProcessingStarted() {
+        showMessage("Offline transaction processing started", duration: 2)
+    }
+    
+    @objc private func offlineProcessingCompleted() {
+        showMessage("Offline transaction processing completed", duration: 2)
+    }
+
 
 }

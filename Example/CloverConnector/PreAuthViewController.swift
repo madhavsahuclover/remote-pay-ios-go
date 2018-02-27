@@ -99,6 +99,7 @@ public class PreAuthViewController:UIViewController, UITableViewDelegate, UITabl
             let alertEnterAmount = UIAlertController(title: "Enter Amount", message: nil, preferredStyle: .alert)
             alertEnterAmount.addTextField { textField in
                 textField.placeholder = "Enter Amount"
+                textField.keyboardType = UIKeyboardType.numbersAndPunctuation
             }
             alertEnterAmount.addAction(UIAlertAction(title: "Done", style: .default, handler: { (aa) in
                 guard let captureAmountText = alertEnterAmount.textFields?.first?.text,
@@ -116,6 +117,12 @@ public class PreAuthViewController:UIViewController, UITableViewDelegate, UITabl
         
         DispatchQueue.main.async { [weak self] in
             self?.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if !tableView.isDecelerating {
+            view.endEditing(true)
         }
     }
     

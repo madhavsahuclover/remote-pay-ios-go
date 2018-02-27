@@ -52,6 +52,7 @@ class RegisterViewController:UIViewController, POSOrderListener, POSStoreListene
     
     override func viewDidAppear(_ animated: Bool) {
         (UIApplication.shared.delegate as? AppDelegate)?.cloverConnectorListener?.viewController = self
+        updateTotals()
     }
     
     @IBAction func longPressHandler(_ sender: UILongPressGestureRecognizer) {

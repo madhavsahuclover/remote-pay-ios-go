@@ -40,6 +40,7 @@ class ManualRefundViewController:UIViewController, UITableViewDelegate, UITableV
                 strongSelf.view.window?.frame.origin.y += ((notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height ?? 0)
             }
         })
+        (UIApplication.shared.delegate as? AppDelegate)?.cloverConnectorListener?.viewController = self
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -91,7 +92,11 @@ class ManualRefundViewController:UIViewController, UITableViewDelegate, UITableV
         return cell ?? UITableViewCell()
     }
     
-    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if !manualRefundsTable.isDecelerating {
+            view.endEditing(true)
+        }
+    }
 
     
 }

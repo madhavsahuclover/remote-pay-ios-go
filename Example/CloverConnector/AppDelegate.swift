@@ -22,8 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, PairingDeviceConfiguratio
 
     fileprivate let PAIRING_AUTH_TOKEN_KEY:String = "PAIRING_AUTH_TOKEN"
     
-    var delegate:OAuthDelegate? = nil
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         store = POSStore()
         store?.availableItems.append(POSItem(id: "1", name: "Cheeseburger", price: 579, taxRate: 0.075, taxable: true))
@@ -37,10 +36,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, PairingDeviceConfiguratio
         store?.availableItems.append(POSItem(id: "9", name: "Strawberry Milkshake", price: 229, taxRate: 0.075, taxable: true))
         store?.availableItems.append(POSItem(id: "10", name: "$25 Gift Card", price: 2500, taxRate: 0.00, taxable: false, tippable: false))
         store?.availableItems.append(POSItem(id: "11", name: "$50 Gift Card", price: 5000, taxRate: 0.000, taxable: false, tippable: false))
+        store?.availableItems.append(POSItem(id: "12", name: "Coke 250ml", price: 100, taxRate: 0.000, taxable: false, tippable: false))
+        store?.availableItems.append(POSItem(id: "13", name: "Coke 330ml", price: 200, taxRate: 0.000, taxable: false, tippable: false))
+        store?.availableItems.append(POSItem(id: "14", name: "Coke 500ml", price: 300, taxRate: 0.000, taxable: false, tippable: false))
+        store?.availableItems.append(POSItem(id: "15", name: "Coke 1.25ltr", price: 500, taxRate: 0.000, taxable: false, tippable: false))
+        store?.availableItems.append(POSItem(id: "16", name: "Coke 1.75ltr", price: 1000, taxRate: 0.000, taxable: false, tippable: false))
+        store?.availableItems.append(POSItem(id: "17", name: "Coupon1", price: 1, taxRate: 0.000, taxable: true))
+        store?.availableItems.append(POSItem(id: "18", name: "Coupon2", price: 2, taxRate: 0.000, taxable: true))
+        store?.availableItems.append(POSItem(id: "19", name: "Coupon3", price:5, taxRate: 0.000, taxable: true))
+        store?.availableItems.append(POSItem(id: "20", name: "Coupon4", price: 10, taxRate: 0.000, taxable: true))
         
         if let tkn = UserDefaults.standard.string( forKey: PAIRING_AUTH_TOKEN_KEY) {
             token = tkn
         }
+
         return true
     }
     
@@ -135,132 +144,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, PairingDeviceConfiguratio
     
     func applicationDidFinishLaunching(_ application: UIApplication) {
         
-    }
-    
-    // FOR iOS versions above 10.0
-    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
-        extractParametersForRestCall(url: url)
-        return true
-    }
-    
-    // FOR iOS versions below 10.0
-    func application(_ application: UIApplication, open url: URL, sourceApplication: String?,
-                     annotation: Any) -> Bool {
-        extractParametersForRestCall(url: url)
-        return true
-    }
-    
-    func extractParametersForRestCall(url: URL)
-    {
-        print("Redirect received from Safari...url recieved: \(url)")
-        
-        let codeFromRecievedUrl = url.query?.components(separatedBy: "code=").last
-        print("codeFromRecievedUrl: \(String(describing: codeFromRecievedUrl))")
-        
-        var merchant_idFromRecievedUrl = url.query?.components(separatedBy: "merchant_id").last
-        merchant_idFromRecievedUrl = extractStringFromURL(url: merchant_idFromRecievedUrl!)
-        print("merchant_idFromRecievedUrl: \(String(describing: merchant_idFromRecievedUrl))")
-        
-        var employee_idFromRecievedUrl = url.query?.components(separatedBy: "employee_id").last
-        employee_idFromRecievedUrl = extractStringFromURL(url: employee_idFromRecievedUrl!)
-        print("employee_idFromRecievedUrl: \(String(describing: employee_idFromRecievedUrl))")
-        
-        var client_idFromRecievedUrl = url.query?.components(separatedBy: "client_id").last
-        client_idFromRecievedUrl = extractStringFromURL(url: client_idFromRecievedUrl!)
-        print("client_idFromRecievedUrl: \(String(describing: client_idFromRecievedUrl))")
-        
-        restCallToGetToken(merchant_id: merchant_idFromRecievedUrl!, employee_id: employee_idFromRecievedUrl!, client_id: client_idFromRecievedUrl!, code: codeFromRecievedUrl!)
-    }
-    
-    /// Make a rest call to get the access token
-    ///
-    /// - Parameters:
-    ///   - merchant_id: received from redirect Url
-    ///   - employee_id: received from redirect Url
-    ///   - client_id: received from redirect Url
-    ///   - code: received from redirect Url
-    func restCallToGetToken(merchant_id: String, employee_id: String, client_id: String, code: String)
-    {
-        let configuration = URLSessionConfiguration .default
-        let session = URLSession(configuration: configuration)
-        
-        let apikeyForUrlForRestCall = "byJiyq2GZNmS6LgtAhr2xGS6gz4dpBYX"
-        let client_idForUrlForRestCall = client_id
-        let client_secretForUrlForRestCall = "fea4a38b-9346-d75c-2f09-1670381a1499"
-        
-        var urlString = NSString(format: "https://api-int.payeezy.com/clovergoOAuth/?environment=stg1.dev.clover.com&apikey=")
-        urlString = "\(urlString)\(apikeyForUrlForRestCall)" as NSString
-        urlString = "\(urlString)&client_id=" as NSString
-        urlString = "\(urlString)\(client_idForUrlForRestCall)" as NSString
-        urlString = "\(urlString)&client_secret=" as NSString
-        urlString = "\(urlString)\(client_secretForUrlForRestCall)" as NSString
-        urlString = "\(urlString)&code=" as NSString
-        urlString = "\(urlString)\(code)" as NSString
-        print("urlString: \(urlString)")
-        
-        let request : NSMutableURLRequest = NSMutableURLRequest()
-        request.url = NSURL(string: NSString(format: "%@", urlString) as String) as URL?
-        request.httpMethod = "GET"
-        request.timeoutInterval = 30
-        
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("application/json", forHTTPHeaderField: "Accept")
-        
-        let dataTask = session.dataTask(with: request as URLRequest) {
-            ( data: Data?, response: URLResponse?, error: Error?) -> Void in
-            // 1: Check HTTP Response for successful GET request
-            guard let httpResponse = response as? HTTPURLResponse, let receivedData = data
-                else {
-                    print("error: not a valid http response")
-                    return
-            }
-            
-            switch (httpResponse.statusCode)
-            {
-            case 200:
-                let response = NSString (data: receivedData, encoding: String.Encoding.utf8.rawValue)
-                print("response is \(response)")
-                do {
-                    let getResponse = try JSONSerialization.jsonObject(with: receivedData, options: .allowFragments)  as! [String:Any]
-                    print("getResponse is \(getResponse)")
-                    
-                    if (self.delegate != nil){
-                        if let accessToken = getResponse["access_token"] as? String {
-                            self.delegate?.initSDKWithOAuth(accessTokenReceived: accessToken)
-                        } else {
-                            
-                        }
-                    }
-                    
-                } catch {
-                    print("error serializing JSON: \(error)")
-                }
-                break
-                
-            case 400:
-                break
-                
-            default:
-                print("GET request got response \(httpResponse.statusCode)")
-            }
-        }
-        dataTask.resume()
-    }
-    
-    /// Used to extract a substring from the URL
-    ///
-    /// - Parameter url: URL from which the string is extracted
-    /// - Returns: extracted string
-    func extractStringFromURL(url: String) -> String
-    {
-        if let startRange = url.range(of: "="), let endRange = url.range(of: "&"), startRange.upperBound <= endRange.lowerBound {
-            let extractedString = url[startRange.upperBound..<endRange.lowerBound]
-            return String(extractedString)
-        }
-        else {
-            print("invalid string")
-            return ""
-        }
     }
 }
 
