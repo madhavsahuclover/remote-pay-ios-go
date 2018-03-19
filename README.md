@@ -65,7 +65,7 @@ This section describes the OAuth flow steps to get the access token required to 
 **Step 3.** Parse the URI data to get the Merchant ID, Employee ID, Client ID and Code.  
 **Step 4.** Make a REST call that includes the Client ID (it's the app id), secret, and Code from your backend server to get the access token. https://sandbox.dev.clover.com/oauth/token?client_id={appId}&client_secret={appSecret}&code={codeUrlParam}  
 **Note** Please note that the sample application as part of this project provides a hosted service for Step 4. Use your own such service to execute this step.  
-**Step 5.** Parse the response of step 4 and retreive the access token. The access token provides the Merchant and Employee context to the SDK, all transactions processed will be under this context.  
+**Step 5.** Parse the response of step 4 and retrieve the access token. The access token provides the Merchant and Employee context to the SDK, all transactions processed will be under this context.  
   
   
 ## Developer XCode iOS Project Setup
