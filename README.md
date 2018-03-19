@@ -16,7 +16,7 @@ It includes the SDK and an example POS. To work with the project effectively, yo
 To experience transactions end-to-end from the merchant and customer perspectives, we also recommend ordering a [Clover Go DevKit](http://cloverdevkit.com/collections/devkits/products/clover-all-in-one-developer-kit)
   
 The SDK enables your custom mobile point-of-sale (POS) to accept card present, EMV compliant payment transactions. 
-Clover Go supports two types of card readersa magnetic stripe, EMV chip-and-signature card reader and an all-in-one card reader that supports Swipe, EMV Dip, and NFC Contactless payments. The SDK is designed to allow merchants to take payments on iOS smartphones and tablets.  
+Clover Go supports two types of card readers: a magnetic stripe, EMV chip-and-signature card reader (audio jack) and an all-in-one card reader (Bluetooth) that supports Swipe, EMV Dip, and NFC Contactless payments. The SDK is designed to allow merchants to take payments on iOS smartphones and tablets.  
 
 **Core features of the  SDK for Clover Go include:**   
 1. Card Present Transactions – Transactions in which the merchant uses the approved card reader to accept physical credit or debit cards on a connected smartphone or tablet. The Clover Go platform supports the following payment options:  
