@@ -60,8 +60,6 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
             env = Env.test
         case .sandbox:
             env = Env.sandbox
-        case .qa:
-            env = Env.qa
         }
         if !config.accessToken.isEmpty {
             cloverGo.initializeWithAccessToken(accessToken: config.accessToken, apiKey: config.apiKey, secret: config.secret, env: env)
@@ -70,8 +68,6 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
         }
         CloverGo.allowAutoConnect = config.allowAutoConnect
         CloverGo.overrideDuplicateTransaction = config.allowDuplicateTransaction
-        CloverGo.remoteApplicationID = config.remoteApplicationID
-        CloverGo.remoteApplicationVersion = config.remoteSourceSDK
         CloverGo.enableLogs(config.enableLogs)
         CloverGo.enableQuickChip = config.enableQuickChip
         
@@ -129,11 +125,6 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
         cloverGo.useReader(cardReaderInfo: readerInfo, delegate: self)
     }
     
-    /// This delegate method is called for scanning the bluetooth devices
-    ///
-    public func scanForBluetoothDevices() {
-        cloverGo.scanForBluetoothReaders()
-    }
     
     /// This delegate method is used to connected with the bluetooth after the scan for devices is finished
     ///
@@ -745,7 +736,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
                     }
                 }
             }
-            cloverGo.captureSignature(transactionId: paymentId, xy: strokesArray)
+            cloverGo.captureSignature(paymentId: paymentId, xy: strokesArray)
         }
     }
     
@@ -767,8 +758,8 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
         
         let delegate : TransactionDelegateImpl? = transactionDelegate as? TransactionDelegateImpl
         
-        if let paymentId = delegate?.lastTransactionResult?.transactionId {
-            cloverGo.captureSignature(transactionId: paymentId, xy: strokesArray)
+        if let paymentId = delegate?.lastTransactionResult?.paymentId {
+            cloverGo.captureSignature(paymentId: paymentId, xy: strokesArray)
             connectorListener?.onSendReceipt()
         }
         
@@ -910,7 +901,7 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
             cardTransaction.cardholderName = transactionResponse.cardHolderName
             
             let payment = CLVModels.Payments.Payment()
-            payment.id = transactionResponse.transactionId
+            payment.id = transactionResponse.paymentId
             payment.amount = transactionResponse.amountCharged
             payment.taxAmount = transactionResponse.taxAmount
             payment.tipAmount = transactionResponse.tipAmount
@@ -937,7 +928,7 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
             } else if transactionType == CLVGoTransactionType.manualrefund {
                 let credit = CLVModels.Payments.Credit()
                 credit.amount = transactionResponse.amountCharged
-                credit.id = transactionResponse.transactionId
+                credit.id = transactionResponse.paymentId
                 credit.taxAmount = transactionResponse.taxAmount
                 let orderRef = CLVModels.Order.Order()
                 orderRef.id = transactionResponse.orderId
@@ -995,7 +986,7 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
             challenge.message = "Payment threshold limit exceeded"
             challenge.type = ChallengeType.OFFLINE_THRESHOLD_LIMIT_EXCEEDED_CHALLENGE
             challenges.append(challenge)
-        case .cvv_failure:
+        case .cvv_mismatch:
             let challenge = Challenge()
             challenge.message = "CVV Mismatch"
             challenge.type = ChallengeType.CVV_MISMATCH_CHALLENGE
