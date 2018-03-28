@@ -57,4 +57,6 @@ public protocol ICloverGoConnector : ICloverConnector {
     
     func retrievePendingPaymentStats() -> Void
     
+    func reRunFailedTransactions() -> Void
+    
 }

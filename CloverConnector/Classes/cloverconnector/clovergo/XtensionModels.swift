@@ -167,4 +167,14 @@ public class GoPendingPaymentEntry : PendingPaymentEntry {
     
 }
 
+public class GoCardData : CardData {
+    
+    public var ksn : String?
+    public var encryptedTrack : String?
+    public var track2EquivalentData : String?
+    public var cardType : String?
+    public var emvtlvData : String?
+    
+}
+
 
