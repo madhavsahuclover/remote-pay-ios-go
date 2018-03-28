@@ -13,10 +13,6 @@ import Foundation
 /// It has the interface methods required to interact with the CloverGo Reader SDK
 public protocol ICloverGoConnector : ICloverConnector {
     
-    /// This delegate method is called for scanning the bluetooth devices
-    ///
-    func scanForBluetoothDevices() -> Void
-    
     /// This delegate method is used to connected with the bluetooth after the scan for devices is finished
     ///
     /// - Parameter deviceInfo: GoDeviceInfo object contains all the details about the device
