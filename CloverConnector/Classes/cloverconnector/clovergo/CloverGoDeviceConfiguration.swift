@@ -121,6 +121,5 @@ public enum CLVGoEnvironment : Int {
     case demo
     case live
     case test
-    case qa
     case sandbox
 }
