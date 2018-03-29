@@ -12,13 +12,10 @@ import GoConnector
 class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorListener, UITextFieldDelegate {
     
     var merchantInfo : MerchantInfo?
+    var alertController : UIAlertController?
     
     func onSendReceipt() {
-        
-//        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
-//        while ((topController.presentedViewController) != nil) {
-//            topController = topController.presentedViewController!
-//        }
+
         if let ac = self.viewController?.presentedViewController as? UIAlertController {
             if !ac.isBeingDismissed && !ac.isBeingPresented {
                 ac.dismiss(animated: true, completion: {
@@ -80,6 +77,9 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     }
     
     func onSignatureRequired() {
+        if let ac = self.viewController?.presentedViewController as? UIAlertController {
+            ac.dismiss(animated: false, completion: nil)
+        }
         self.viewController?.performSegue(withIdentifier: "signatureCloverGoViewControllerID", sender: nil)
     }
     
@@ -102,6 +102,12 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
 //        while ((topController.presentedViewController) != nil) {
 //            topController = topController.presentedViewController!
 //        }
+        
+        if let popoverController = choiceAlert.popoverPresentationController, let viewController = self.viewController {
+            popoverController.sourceView = viewController.view
+            popoverController.sourceRect = CGRect(x: viewController.view.bounds.midX, y: viewController.view.bounds.midY, width: 0, height: 0)
+        }
+        
         self.viewController?.present(choiceAlert, animated:true, completion:nil)
     }
     
@@ -189,36 +195,27 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     }
     
     @objc private func dismissMessage1(_ alertController:UIAlertController) {
-        if let presentedViewController = self.viewController?.presentedViewController as? UIAlertController {
-            if presentedViewController.message == alertController.message && presentedViewController.title == alertController.title {
-                presentedViewController.dismiss(animated: false, completion: nil)
-            } else {
-                alertController.dismiss(animated: false, completion: nil)
-            }
+        if (self.viewController?.presentedViewController as? UIAlertController) != nil {
+            alertController.dismiss(animated: false, completion: nil)
         }
     }
     
     private func showMessage(_ message:String, duration:Int = 3) {
         DispatchQueue.main.async {
             if let vc = self.viewController {
-                var vuController = vc
-                while( (vuController.presentedViewController != nil) &&
-                    vuController != vuController.presentedViewController ){
-                        vuController = vuController.presentedViewController ?? vc
+                if let ac = self.viewController?.presentedViewController as? UIAlertController {
+                    ac.dismiss(animated: false, completion: {
+                        let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
+                        vc.present(alertController, animated: false, completion: nil)
+                        self.perform(#selector(self.dismissMessage1), with: alertController, afterDelay: TimeInterval(duration))
+                    })
+                } else {
+                    let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
+                    vc.present(alertController, animated: false, completion: nil)
+                    self.perform(#selector(self.dismissMessage1), with: alertController, afterDelay: TimeInterval(duration))
                 }
-                let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
-                vuController.present(alertController, animated: false, completion: nil)
-                self.perform(#selector(self.dismissMessage1), with: alertController, afterDelay: TimeInterval(duration))
             }
         }
-    }
-    
-    override func onAuthResponse(_ authResponse: AuthResponse) {
-        super.onAuthResponse(authResponse)
-    }
-    
-    override func onSaleResponse(_ response: SaleResponse) {
-        super.onSaleResponse(response)
     }
     
     override func onDeviceReady(_ merchantInfo: MerchantInfo) {
@@ -365,5 +362,45 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
         showMessage("Offline transaction processing completed", duration: 2)
     }
 
+    override func onReadCardDataResponse(_ readCardDataResponse: ReadCardDataResponse) {
+        if let vc = self.viewController as? ReadCardDataViewController {
+            vc.cardDataTextView.text = ""
+            if readCardDataResponse.success {
+                if let goCardData = readCardDataResponse.cardData as? GoCardData {
+                    if let pan = goCardData.pan {
+                        vc.cardDataTextView.insertText("PAN : \(pan)\n")
+                    }
+                    if let cardHolderName = goCardData.cardholderName {
+                        vc.cardDataTextView.insertText("Cardholder Name : \(cardHolderName)\n")
+                    }
+                    if let expDate = goCardData.exp {
+                        vc.cardDataTextView.insertText("Exp Date : \(expDate)\n")
+                    }
+                    if let track1 = goCardData.track1 {
+                        vc.cardDataTextView.insertText("Track 1 : \(track1)\n")
+                    }
+                    if let track2 = goCardData.track2 {
+                        vc.cardDataTextView.insertText("Track 2 : \(track2)\n")
+                    }
+                    if let ksn = goCardData.ksn {
+                        vc.cardDataTextView.insertText("KSN : \(ksn)\n")
+                    }
+                    if let encryptedTrack = goCardData.encryptedTrack {
+                        vc.cardDataTextView.insertText("Encrypted Track : \(encryptedTrack)\n")
+                    }
+                    if let tlvData = goCardData.emvtlvData {
+                        vc.cardDataTextView.insertText("TLV Data : \(tlvData)\n")
+                    }
+                    if let cardType = goCardData.cardType {
+                        vc.cardDataTextView.insertText("Card Type : \(cardType)\n")
+                    }
+                }
+            } else {
+                if let message = readCardDataResponse.message {
+                    vc.cardDataTextView.insertText("Error : \(message)\n")
+                }
+            }
+        }
+    }
 
 }

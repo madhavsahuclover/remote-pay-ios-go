@@ -28,7 +28,10 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        //Check with CloverGo Integration team for demo credentials
+        PARAMETERS.accessToken = ""
+        PARAMETERS.apiKey = ""
+        PARAMETERS.secret = ""
         if let savedEndpoint = UserDefaults.standard.string(forKey: WS_ENDPOINT) {
             endpointTextField.text = savedEndpoint
         }
@@ -149,10 +152,6 @@ class ViewController: UIViewController {
     
     func selectDemoMode()
     {
-        
-        PARAMETERS.accessToken = "7a118a9c-428c-b33b-7c28-0638c893a7bf"//"0a7637b3-66eb-623c-7d9b-2acfb90d8237"
-        PARAMETERS.apiKey = "Lht4CAQq8XxgRikjxwE71JE20by5dzlY"
-        PARAMETERS.secret = "7ebgf6ff8e98d1565ab988f5d770a911e36f0f2347e3ea4eb719478c55e74d9g"
         
         showNextVC(storyboardID: "readerSetUpViewControllerID")
     }

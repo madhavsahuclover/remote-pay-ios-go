@@ -10,18 +10,35 @@ import UIKit
 
 class OAuthViewController: UIViewController, UIWebViewDelegate {
     
+    // Check with CloverGo Integration team for demo credentials
+    let CLIENT_ID = ""
+    let CLIENT_SECRET = ""
+    
     @IBOutlet weak var webViewForOAuth: UIWebView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let url = "https://dev14.dev.clover.com/oauth/authorize?response_type=code&client_id=95JVJC8C8M14C&redirect_uri=clovergooauth://oauthresult"
-        webViewForOAuth.loadRequest(URLRequest(url: URL(string: url)!))
+        loadAuthorizationRequest()
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func loadAuthorizationRequest()
+    {
+        let responseType = "code"
+        let redirectURL = "clovergooauth://oauthresult"
+        
+        var authorizationURL = "https://dev14.dev.clover.com/oauth/authorize?"
+        authorizationURL += "response_type=\(responseType)&"
+        authorizationURL += "client_id=\(CLIENT_ID)&"
+        authorizationURL += "redirect_uri=\(redirectURL)"
+        
+        let request = URLRequest(url: NSURL(string: authorizationURL)! as URL)
+        webViewForOAuth.loadRequest(request)
     }
     
     func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
@@ -33,52 +50,29 @@ class OAuthViewController: UIViewController, UIWebViewDelegate {
     
     func extractParametersForRestCall(url: URL)
     {
-        print("Redirect received from Safari...url recieved: \(url)")
-        
         let codeFromRecievedUrl = url.query?.components(separatedBy: "code=").last
         print("codeFromRecievedUrl: \(String(describing: codeFromRecievedUrl))")
         
-        var merchant_idFromRecievedUrl = url.query?.components(separatedBy: "merchant_id").last
-        merchant_idFromRecievedUrl = extractStringFromURL(url: merchant_idFromRecievedUrl!)
-        print("merchant_idFromRecievedUrl: \(String(describing: merchant_idFromRecievedUrl))")
-        
-        var employee_idFromRecievedUrl = url.query?.components(separatedBy: "employee_id").last
-        employee_idFromRecievedUrl = extractStringFromURL(url: employee_idFromRecievedUrl!)
-        print("employee_idFromRecievedUrl: \(String(describing: employee_idFromRecievedUrl))")
-        
-        var client_idFromRecievedUrl = url.query?.components(separatedBy: "client_id").last
-        client_idFromRecievedUrl = extractStringFromURL(url: client_idFromRecievedUrl!)
-        print("client_idFromRecievedUrl: \(String(describing: client_idFromRecievedUrl))")
-        
-        restCallToGetToken(merchant_id: merchant_idFromRecievedUrl!, employee_id: employee_idFromRecievedUrl!, client_id: client_idFromRecievedUrl!, code: codeFromRecievedUrl!)
+        restCallToGetToken(code: codeFromRecievedUrl!)
     }
     
     /// Make a rest call to get the access token
     ///
     /// - Parameters:
-    ///   - merchant_id: received from redirect Url
-    ///   - employee_id: received from redirect Url
-    ///   - client_id: received from redirect Url
     ///   - code: received from redirect Url
-    func restCallToGetToken(merchant_id: String, employee_id: String, client_id: String, code: String)
+    func restCallToGetToken(code: String)
     {
-        let configuration = URLSessionConfiguration .default
-        let session = URLSession(configuration: configuration)
-        
-        let apikeyForUrlForRestCall = "byJiyq2GZNmS6LgtAhr2xGS6gz4dpBYX"
-        let client_idForUrlForRestCall = client_id
-        let client_secretForUrlForRestCall = "d725cab0-f8af-69e6-c0ed-809b846e83f8"
-        
-        var urlString = NSString(format: "https://api-int.payeezy.com/clovergoOAuth/?environment=dev14.dev.clover.com&apikey=")
-        urlString = "\(urlString)\(apikeyForUrlForRestCall)" as NSString
+        var urlString = NSString(format: "https://dev14.dev.clover.com/oauth/token?")
         urlString = "\(urlString)&client_id=" as NSString
-        urlString = "\(urlString)\(client_idForUrlForRestCall)" as NSString
+        urlString = "\(urlString)\(CLIENT_ID)" as NSString
         urlString = "\(urlString)&client_secret=" as NSString
-        urlString = "\(urlString)\(client_secretForUrlForRestCall)" as NSString
+        urlString = "\(urlString)\(CLIENT_SECRET)" as NSString
         urlString = "\(urlString)&code=" as NSString
         urlString = "\(urlString)\(code)" as NSString
         print("urlString: \(urlString)")
         
+        let configuration = URLSessionConfiguration .default
+        let session = URLSession(configuration: configuration)
         let request : NSMutableURLRequest = NSMutableURLRequest()
         request.url = NSURL(string: NSString(format: "%@", urlString) as String) as URL?
         request.httpMethod = "GET"
@@ -159,8 +153,6 @@ class OAuthViewController: UIViewController, UIWebViewDelegate {
             Thread.sleep(forTimeInterval: 1)
             DispatchQueue.main.async {
                 PARAMETERS.accessToken = accessTokenReceived
-                PARAMETERS.apiKey = "Lht4CAQq8XxgRikjxwE71JE20by5dzlY"
-                PARAMETERS.secret = "7ebgf6ff8e98d1565ab988f5d770a911e36f0f2347e3ea4eb719478c55e74d9g"
                 self.showNextVC(storyboardID: "readerSetUpViewControllerID")
             }
         }

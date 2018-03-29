@@ -5,7 +5,7 @@
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13174"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
@@ -1712,13 +1712,13 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hRZ-Xj-yBi">
-                                                            <rect key="frame" x="0.0" y="10" width="139.5" height="105"/>
+                                                            <rect key="frame" x="16" y="30" width="107.5" height="85"/>
                                                             <subviews>
                                                                 <view opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" verticalCompressionResistancePriority="800" translatesAutoresizingMaskIntoConstraints="NO" id="blx-sY-zir">
-                                                                    <rect key="frame" x="3" y="0.0" width="133" height="62"/>
+                                                                    <rect key="frame" x="3" y="0.0" width="101" height="62"/>
                                                                     <subviews>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="800" text="Available Item" textAlignment="center" lineBreakMode="wordWrap" baselineAdjustment="alignBaselines" minimumFontSize="8" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qLR-EG-I7x">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="133" height="62"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="101" height="62"/>
                                                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                             <nil key="highlightedColor"/>
@@ -1740,7 +1740,7 @@
                                                             </constraints>
                                                         </view>
                                                         <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="31E-Ak-4gQ">
-                                                            <rect key="frame" x="124.5" y="-5" width="30" height="30"/>
+                                                            <rect key="frame" x="108.5" y="15" width="30" height="30"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vNC-AI-53M">
                                                                     <rect key="frame" x="0.0" y="0.0" width="30" height="30"/>
@@ -1774,7 +1774,7 @@
                                                             </variation>
                                                         </view>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="700" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iK8-in-lot">
-                                                            <rect key="frame" x="10.5" y="72" width="139" height="33"/>
+                                                            <rect key="frame" x="26.5" y="92" width="107" height="13"/>
                                                             <color key="backgroundColor" red="0.70554565815493708" green="0.77949233983174171" blue="0.85336223826335078" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2405,6 +2405,7 @@
                         <segue destination="ROu-Ne-bPr" kind="relationship" relationship="viewControllers" id="Nag-kZ-7eC"/>
                         <segue destination="rd8-4X-W1m" kind="relationship" relationship="viewControllers" id="8ry-at-CvI"/>
                         <segue destination="9Bb-Ch-w6N" kind="relationship" relationship="viewControllers" id="rcw-ph-HUN"/>
+                        <segue destination="Ac8-6W-vdd" kind="relationship" relationship="viewControllers" id="iuA-7q-5nC"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ciw-9C-pKB" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -2713,6 +2714,58 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="coH-ZO-LDj" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-522.39999999999998" y="1944.3778110944529"/>
+        </scene>
+        <!--Read Card Data-->
+        <scene sceneID="LPg-1K-pbm">
+            <objects>
+                <viewController id="Ac8-6W-vdd" userLabel="Read Card Data" customClass="ReadCardDataViewController" customModule="CloverConnector_Example" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="KeP-Mm-S9a"/>
+                        <viewControllerLayoutGuide type="bottom" id="9XU-Lb-FFq"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="RFV-xf-l2g">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fGj-u7-V1r">
+                                <rect key="frame" x="16" y="46" width="343" height="38"/>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="38" id="s0c-Nk-qtg"/>
+                                </constraints>
+                                <state key="normal" title="Read MSR/EMV Card Data">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="readCardData:" destination="Ac8-6W-vdd" eventType="touchUpInside" id="BOv-1v-2rv"/>
+                                </connections>
+                            </button>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="LEJ-ps-vEB">
+                                <rect key="frame" x="16" y="106" width="343" height="297"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="fGj-u7-V1r" firstAttribute="leading" secondItem="LEJ-ps-vEB" secondAttribute="leading" id="Hq4-ew-iKI"/>
+                            <constraint firstItem="LEJ-ps-vEB" firstAttribute="top" secondItem="fGj-u7-V1r" secondAttribute="bottom" constant="22" id="Ww4-d7-68R"/>
+                            <constraint firstItem="fGj-u7-V1r" firstAttribute="trailing" secondItem="RFV-xf-l2g" secondAttribute="trailingMargin" id="Y9m-dc-LkH"/>
+                            <constraint firstItem="fGj-u7-V1r" firstAttribute="top" secondItem="KeP-Mm-S9a" secondAttribute="bottom" constant="26" id="bkY-LY-dfn"/>
+                            <constraint firstItem="fGj-u7-V1r" firstAttribute="leading" secondItem="RFV-xf-l2g" secondAttribute="leadingMargin" id="c5Q-to-JV7"/>
+                            <constraint firstItem="fGj-u7-V1r" firstAttribute="trailing" secondItem="LEJ-ps-vEB" secondAttribute="trailing" id="h7y-Yw-2C0"/>
+                            <constraint firstItem="9XU-Lb-FFq" firstAttribute="top" secondItem="LEJ-ps-vEB" secondAttribute="bottom" constant="215" id="qXL-zN-pyz"/>
+                        </constraints>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Read Card Data" id="R6e-9q-eYe" userLabel="Read Card Data"/>
+                    <connections>
+                        <outlet property="cardDataTextView" destination="LEJ-ps-vEB" id="BuF-fU-HLJ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="f90-VW-Ipu" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-528.79999999999995" y="2627.136431784108"/>
         </scene>
         <!--Offline Tx-->
         <scene sceneID="29K-x3-Ybn">

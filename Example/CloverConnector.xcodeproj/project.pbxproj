@@ -51,6 +51,7 @@
 		7EEB272A1D9C0E640017879B /* OrderDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EEB27291D9C0E640017879B /* OrderDetailsViewController.swift */; };
 		7EEB720D1EAFFA81008E641D /* SimpleTestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EEB720C1EAFFA81008E641D /* SimpleTestViewController.swift */; };
 		B361898C1FB1AC3000667C11 /* DisconnectReaderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B361898B1FB1AC3000667C11 /* DisconnectReaderViewController.swift */; };
+		B3AEF82C206C647D006D0DE3 /* ReadCardDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AEF82B206C647C006D0DE3 /* ReadCardDataViewController.swift */; };
 		DA6BFE5D963C68DE0967E1A7 /* Pods_CloverConnector_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95D7B135DBBE64C88249EB84 /* Pods_CloverConnector_Example.framework */; };
 		E52BE6E91F8B4EB6007CC418 /* CloverGoConnectorListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52BE6E81F8B4EB6007CC418 /* CloverGoConnectorListener.swift */; };
 		E52BE6EB1F8B501D007CC418 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52BE6EA1F8B501D007CC418 /* Utility.swift */; };
@@ -132,6 +133,7 @@
 		95D7B135DBBE64C88249EB84 /* Pods_CloverConnector_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CloverConnector_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		96C5AB5C4427777EBE65CA2A /* Pods-CloverConnector_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CloverConnector_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-CloverConnector_Example/Pods-CloverConnector_Example.release.xcconfig"; sourceTree = "<group>"; };
 		B361898B1FB1AC3000667C11 /* DisconnectReaderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectReaderViewController.swift; sourceTree = "<group>"; };
+		B3AEF82B206C647C006D0DE3 /* ReadCardDataViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadCardDataViewController.swift; sourceTree = "<group>"; };
 		E52BE6E81F8B4EB6007CC418 /* CloverGoConnectorListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloverGoConnectorListener.swift; sourceTree = "<group>"; };
 		E52BE6EA1F8B501D007CC418 /* Utility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
 		E52BE6EC1F8B50FA007CC418 /* SignatureCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignatureCaptureView.swift; sourceTree = "<group>"; };
@@ -279,6 +281,7 @@
 		E52BE6E71F8B4EA1007CC418 /* clovergo */ = {
 			isa = PBXGroup;
 			children = (
+				B3AEF82B206C647C006D0DE3 /* ReadCardDataViewController.swift */,
 				79C1DB081F8E92F300871DFF /* CloseOutViewController.swift */,
 				E52BE6E81F8B4EB6007CC418 /* CloverGoConnectorListener.swift */,
 				E52BE6EA1F8B501D007CC418 /* Utility.swift */,
@@ -446,6 +449,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3AEF82C206C647D006D0DE3 /* ReadCardDataViewController.swift in Sources */,
 				E52BE6EF1F8B545A007CC418 /* SignatureCloverGoViewController.swift in Sources */,
 				7ED6963D1EB7B8AE0010032A /* POSNakedRefund.swift in Sources */,
 				7922FFBA2003F9C700FC34C3 /* OfflineTxViewController.swift in Sources */,
