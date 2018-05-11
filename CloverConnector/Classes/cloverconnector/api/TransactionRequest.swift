@@ -69,6 +69,8 @@ public class TransactionRequest : NSObject, Mappable {
     */
     public var vaultedCard:CLVModels.Payments.VaultedCard?
     
+    public var paymentNote:String?
+    
     /// This function can be used to validate JSON prior to mapping. Return nil to cancel mapping at this point
     /// :nodoc:
     public required init?(map:Map) {

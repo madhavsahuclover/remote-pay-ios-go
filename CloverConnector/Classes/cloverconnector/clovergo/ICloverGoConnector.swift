@@ -53,6 +53,8 @@ public protocol ICloverGoConnector : ICloverConnector {
     
     func retrievePendingPaymentStats() -> Void
     
-    func reRunFailedTransactions() -> Void
+    func reRunFailedOfflineTransactions() -> Void
+    
+    func updateFirmware(deviceInfo:CLVModels.Device.GoDeviceInfo) -> Void
     
 }

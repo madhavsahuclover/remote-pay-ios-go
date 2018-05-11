@@ -689,13 +689,13 @@ class DefaultCloverDevice : CloverDevice, CloverTransportObserver {
             
             let hasAttachmentURI = attachmentUrl != nil
             let hasAttachmentData = attachmentData != nil
-            let payloadTooLarge = ((remoteMsg.attachment?.characters.count ?? 0) + (remoteMsg.payload?.characters.count ?? 0)) > maxMessageSizeInChars
+            let payloadTooLarge = ((remoteMsg.attachment?.count ?? 0) + (remoteMsg.payload?.count ?? 0)) > maxMessageSizeInChars
             let shouldFrag = hasAttachmentURI || hasAttachmentData || payloadTooLarge
             if shouldFrag { // we NEED to fragment
                 
                 // if the payload size exceeds the max, then fail immediately
                 // note that this is not exact - data in a String will be a different length than the same data in Data thanks to the JSON conversion and multiple escaping done on messages, but there's enough pad in the max payload to account for this.
-                if (remoteMsg.attachment != nil && remoteMsg.attachment!.characters.count > cloverConnector.MAX_PAYLOAD_SIZE) || // passed in a formatted string, check for length (this isn't actually used anywhere...)
+                if (remoteMsg.attachment != nil && remoteMsg.attachment!.count > cloverConnector.MAX_PAYLOAD_SIZE) || // passed in a formatted string, check for length (this isn't actually used anywhere...)
                     (attachmentData != nil && attachmentData!.count > cloverConnector.MAX_PAYLOAD_SIZE) {                       // passed in a data chunk, check for length
                     debugPrint("Error sending message - payload size is greater than the maximum allowed")
                     return nil
@@ -705,9 +705,9 @@ class DefaultCloverDevice : CloverDevice, CloverTransportObserver {
                 var fragmentIndex = 0
 
                 var payloadStr = remoteMsg.payload ?? ""
-                while payloadStr.characters.count > 0 {
+                while payloadStr.count > 0 {
                     // FRAGMENT Payload
-                    let range = (payloadStr.startIndex ..< payloadStr.characters.index(payloadStr.startIndex, offsetBy: maxMessageSizeInChars < payloadStr.characters.count ? maxMessageSizeInChars : payloadStr.characters.count))
+                    let range = (payloadStr.startIndex ..< payloadStr.index(payloadStr.startIndex, offsetBy: maxMessageSizeInChars < payloadStr.count ? maxMessageSizeInChars : payloadStr.count))
                     
                     let fPayload = String(payloadStr[range])
                     //            debugPrint(fragment)
@@ -715,7 +715,7 @@ class DefaultCloverDevice : CloverDevice, CloverTransportObserver {
                     payloadStr.removeSubrange(range)
                     
                     
-                    sendMessageFragment(remoteMessage:remoteMsg, payloadFragment: fPayload, attachmentFragment: nil, fragmentIndex: fragmentIndex, isLastMessage: payloadStr.characters.count == 0 && remoteMsg.attachment?.characters.count ?? 0 == 0 && remoteMsg.attachmentUri?.characters.count ?? 0 == 0 && attachmentData == nil)
+                    sendMessageFragment(remoteMessage:remoteMsg, payloadFragment: fPayload, attachmentFragment: nil, fragmentIndex: fragmentIndex, isLastMessage: payloadStr.count == 0 && remoteMsg.attachment?.count ?? 0 == 0 && remoteMsg.attachmentUri?.count ?? 0 == 0 && attachmentData == nil)
                     fragmentIndex += 1
                 }
 
@@ -728,16 +728,16 @@ class DefaultCloverDevice : CloverDevice, CloverTransportObserver {
                         // set encoding to BASE64.ATTACHMENT
                         // in this case, change the encoding and chunk as-is
                         remoteMsg.attachmentEncoding = "BASE64.ATTACHMENT" // must reconstruct the entire attachment before decoding
-                        while attach.characters.count > 0 {
+                        while attach.count > 0 {
                             // FRAGMENT Attachment
-                            let range = (attach.startIndex ..< attach.characters.index(attach.startIndex, offsetBy: maxMessageSizeInChars < attach.characters.count ? maxMessageSizeInChars : attach.characters.count))
+                            let range = (attach.startIndex ..< attach.index(attach.startIndex, offsetBy: maxMessageSizeInChars < attach.count ? maxMessageSizeInChars : attach.count))
                             
                             let aPayload = String(attach[range])
                             
                             attach.removeSubrange(range)
                             
                             
-                            sendMessageFragment(remoteMessage:remoteMsg, payloadFragment: nil, attachmentFragment: aPayload, fragmentIndex: fragmentIndex, isLastMessage: attach.characters.count == 0)
+                            sendMessageFragment(remoteMessage:remoteMsg, payloadFragment: nil, attachmentFragment: aPayload, fragmentIndex: fragmentIndex, isLastMessage: attach.count == 0)
                             fragmentIndex += 1
                         }
                         

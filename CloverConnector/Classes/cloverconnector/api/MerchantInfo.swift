@@ -9,11 +9,11 @@ import Foundation
  */
 public class MerchantInfo : NSObject {
     /// The id of the merchant
-    public fileprivate(set) var merchantId:String?
+    public var merchantId:String?
     /// the merchant mid
-    public fileprivate(set) var merchantMId:String?
+    public var merchantMId:String?
     /// the merchant name
-    public fileprivate(set) var merchantName:String?
+    public var merchantName:String?
     
     /// whether the merchant is configured to process auth requests
     public var  supportsAuths:Bool = true
@@ -31,7 +31,7 @@ public class MerchantInfo : NSObject {
     public var  supportsTipAdjust:Bool = true
     
     /// contains information about the tethered device
-    public fileprivate(set) var deviceInfo:DeviceInfo?
+    public var deviceInfo:DeviceInfo?
     
     
     public override init() {

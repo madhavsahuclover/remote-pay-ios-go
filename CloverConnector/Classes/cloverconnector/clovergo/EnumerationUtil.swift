@@ -160,7 +160,7 @@ class EnumerationUtil {
         }
     }
     
-    class func CardReaderEvent_toGoReaderTransactionEvent(event:TransactionEvent) -> CLVModels.Payments.GoTransactionEvent? {
+    class func TransactionEvent_toGoReaderTransactionEvent(event:TransactionEvent) -> CLVModels.Payments.GoTransactionEvent? {
         switch event {
         case .card_swiped:
             return .CARD_SWIPED
@@ -226,4 +226,35 @@ class EnumerationUtil {
         }
     }
     
+    class func CardReaderInitializationEvent_toGoDeviceInitializationEvent(event: CardReaderInitializationEvent) -> CLVModels.Device.GoDeviceInitializationEvent {
+        switch event {
+        case .clear_aid_pk_complete, .aid_flush_complete, .public_key_flush_complete,.dol_flush_complete:
+            return .LOADING_TERMINAL_PARAMS
+        case .initialization_complete:
+            return .INITIALIZATION_COMPLETE
+        case .downloading_firmware:
+            return .DOWNLOADING_FIRMWARE
+        case .firware_download_complete:
+            return .FIRMWARE_DOWNLOAD_COMPLETE
+        case .updating_firmware:
+            return .UPDATING_FIRMWARE
+        case .firmware_update_complete:
+            return .FIRMWARE_UPDATE_COMPLETE
+        }
+    }
+    
+    class func CardReaderErrorEvent_toGoDeviceErrorEvent(event: CardReaderErrorEvent) -> CLVModels.Device.GoDeviceErrorEvent{
+        switch event {
+        case .initialization_failed:
+            return .INITIALIZATION_FAILED
+        case .reader_data_not_avaliable:
+            return .TERMINAL_PARAMS_NOT_AVAILABLE
+        case .firmware_download_failed:
+            return .FIRMWARE_DOWNLOAD_FAILED
+        case .firmware_update_failed:
+            return .FIRMWARE_UPDATE_FAILED
+        case .firmware_update_not_supported:
+            return .FIRMWARE_UPDATE_NOT_SUPPORTED
+        }
+    }
 }

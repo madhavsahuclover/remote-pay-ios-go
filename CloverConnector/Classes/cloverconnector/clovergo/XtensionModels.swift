@@ -109,16 +109,19 @@ extension CLVModels.Payments {
 
 extension CLVModels.Device {
     
-    public class GoDeviceInfo : NSObject {
-        public let type:GoDeviceType
-        public var name : String?
+    public class GoDeviceInfo : DeviceInfo {
         public var batteryPercentage:Int = -1
-        public var serialNumber:String?
         public var connected:Bool = false
-        
         public var bluetoothId:String?
+        public var firmwareVersion:String?
+        public var type:GoDeviceType = .RP450
         
-        public init(type:GoDeviceType) {
+        public override init(name: String?, serial: String?, model: String?) {
+            super.init(name: name, serial: serial, model: model)
+        }
+        
+        convenience init(type:GoDeviceType) {
+            self.init(name: "", serial: "", model: "")
             self.type = type
         }
     }
@@ -133,6 +136,55 @@ extension CLVModels.Device {
                 return "RP350"
             case .RP450:
                 return "RP450"
+            }
+        }
+    }
+    
+    @objc public enum GoDeviceInitializationEvent : Int {
+        case LOADING_TERMINAL_PARAMS
+        case INITIALIZATION_COMPLETE
+        case DOWNLOADING_FIRMWARE
+        case FIRMWARE_DOWNLOAD_COMPLETE
+        case UPDATING_FIRMWARE
+        case FIRMWARE_UPDATE_COMPLETE
+        
+        public func getDescription() -> String {
+            switch self {
+            case .LOADING_TERMINAL_PARAMS:
+                return "Loading terminal parameters"
+            case .INITIALIZATION_COMPLETE:
+                return "Initialization Complete"
+            case .DOWNLOADING_FIRMWARE:
+                return "Downloading Firmware"
+            case .FIRMWARE_DOWNLOAD_COMPLETE:
+                return "Firmware download complete"
+            case .UPDATING_FIRMWARE:
+                return "Updating firmware"
+            case .FIRMWARE_UPDATE_COMPLETE:
+                return "Firmware update complete"
+            }
+        }
+    }
+    
+    @objc public enum GoDeviceErrorEvent : Int {
+        case INITIALIZATION_FAILED
+        case TERMINAL_PARAMS_NOT_AVAILABLE
+        case FIRMWARE_DOWNLOAD_FAILED
+        case FIRMWARE_UPDATE_FAILED
+        case FIRMWARE_UPDATE_NOT_SUPPORTED
+        
+        public func getDescription() -> String {
+            switch self {
+            case .INITIALIZATION_FAILED:
+                return "Initialization Failed"
+            case .TERMINAL_PARAMS_NOT_AVAILABLE:
+                return "Terminal paramters could not be loaded"
+            case .FIRMWARE_DOWNLOAD_FAILED:
+                return "Firmware download failed"
+            case .FIRMWARE_UPDATE_FAILED:
+                return "Firmware update failed"
+            case .FIRMWARE_UPDATE_NOT_SUPPORTED:
+                return "Firmware update not supported"
             }
         }
     }

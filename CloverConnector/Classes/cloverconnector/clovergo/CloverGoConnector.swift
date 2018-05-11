@@ -11,7 +11,7 @@ import clovergoclient
 import CloverGoReaderSDK
 
 public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegate {
-    
+
     public var CARD_ENTRY_METHOD_MAG_STRIPE: Int = 0
     
     public var CARD_ENTRY_METHOD_ICC_CONTACT: Int = 1
@@ -120,7 +120,6 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     /// This delegate method is called to connect to a device
     ///
     public func initializeConnection() {
-        
         let readerInfo = ReaderInfo(readerType: EnumerationUtil.GoReaderType_toCardReaderType(type: config.deviceType), serialNumber: nil)
         cloverGo.useReader(cardReaderInfo: readerInfo, delegate: self)
     }
@@ -132,7 +131,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     public func connectToBluetoothDevice(deviceInfo:CLVModels.Device.GoDeviceInfo) {
         let reader = ReaderInfo(readerType: EnumerationUtil.GoReaderType_toCardReaderType(type: deviceInfo.type), serialNumber: nil)
         reader.bluetoothId = deviceInfo.bluetoothId
-        reader.bluetoothName = deviceInfo.name
+        reader.bluetoothName = deviceInfo.deviceName
         cloverGo.connectToBTReader(readerInfo: reader)
     }
     
@@ -257,6 +256,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
         var order:Order?
         if let transactionRequest = lastTransactionRequest {
             order = Order()
+            order!.note = (transactionRequest as? TransactionRequest)?.paymentNote
             if let saleRequest = transactionRequest as? SaleRequest {
                 order!.tax = saleRequest.taxAmount ?? 0
                 order!.tip = saleRequest.tipAmount ?? 0
@@ -442,8 +442,8 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     public func onCardReaderDiscovered(readers: [ReaderInfo]) {
         var discoveredReaders : [CLVModels.Device.GoDeviceInfo] = []
         for r in readers {
-            let reader = CLVModels.Device.GoDeviceInfo(type: EnumerationUtil.CardReaderType_toGoReaderType(type: r.readerType))
-            reader.name = r.bluetoothName ?? r.readerName
+            let reader = CLVModels.Device.GoDeviceInfo(name: r.bluetoothName ?? r.readerName, serial: "", model: "")
+            reader.type = EnumerationUtil.CardReaderType_toGoReaderType(type: r.readerType)
             reader.bluetoothId = r.bluetoothId
             discoveredReaders.append(reader)
         }
@@ -477,7 +477,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     ///
     /// - Parameter event: Gives the details about the CardReaderEvent during reader reset process
     public func onReaderResetProgress(event: CardReaderInitializationEvent) {
-        debugPrint("Reader reset is in progress - \(event.toString())")
+        connectorListener?.onDeviceInitializationEvent(event: EnumerationUtil.CardReaderInitializationEvent_toGoDeviceInitializationEvent(event: event))
     }
     
     /// This delegate method is called when the reader is ready to start a new transaction. Start transaction should be called after this method.
@@ -486,7 +486,14 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     public func onReady(cardReaderInfo: ReaderInfo) {
         debugPrint("Reader is Ready!")
         deviceReady = true
-        let currMerchantInfo = MerchantInfo(id: self.merchantInfo?.merchantId, mid: nil, name: self.merchantInfo?.merchantName, deviceName: cardReaderInfo.bluetoothName ?? cardReaderInfo.readerName, deviceSerialNumber: cardReaderInfo.serialNumber, deviceModel: cardReaderInfo.readerType.toString())
+        let currMerchantInfo = MerchantInfo()
+        currMerchantInfo.merchantId = self.merchantInfo?.merchantId
+        currMerchantInfo.merchantName = self.merchantInfo?.merchantName
+        let deviceInfo = CLVModels.Device.GoDeviceInfo(name: cardReaderInfo.bluetoothName ?? cardReaderInfo.readerName, serial: cardReaderInfo.serialNumber, model: cardReaderInfo.readerType.toString())
+        deviceInfo.batteryPercentage = cardReaderInfo.batteryPercentage
+        deviceInfo.firmwareVersion = cardReaderInfo.firmwareVersion
+        deviceInfo.connected = true
+        currMerchantInfo.deviceInfo = deviceInfo
         if let mercInfo = self.merchantInfo {
             currMerchantInfo.supportsAuths = mercInfo.supportsAuths
             currMerchantInfo.supportsVaultCards = mercInfo.supportsVaultCards
@@ -780,7 +787,7 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
         }
     }
     
-    public func reRunFailedTransactions() {
+    public func reRunFailedOfflineTransactions() {
         self.cloverGo.reRunFailedOfflineTransactions()
     }
     
@@ -798,6 +805,11 @@ public class CloverGoConnector : NSObject, ICloverGoConnector, CardReaderDelegat
     
     public func sendMessageToActivity(_ request: MessageToActivity) {
         debugPrint("Not supported with CloverGo Connector")
+    }
+    
+    public func updateFirmware(deviceInfo: CLVModels.Device.GoDeviceInfo) {
+        let reader = ReaderInfo(readerType: EnumerationUtil.GoReaderType_toCardReaderType(type: deviceInfo.type), serialNumber: nil)
+        cloverGo.updateFirmware(cardReaderInfo: reader)
     }
 
 }
@@ -823,7 +835,7 @@ class TransactionDelegateImpl : NSObject, TransactionDelegate {
     ///
     /// - Parameter event: Gives the details about the CardReaderEvent during the transaction
     func onProgress(event: TransactionEvent) {
-        if let transactionEvent = EnumerationUtil.CardReaderEvent_toGoReaderTransactionEvent(event: event) {
+        if let transactionEvent = EnumerationUtil.TransactionEvent_toGoReaderTransactionEvent(event: event) {
             self.connectorListener?.onTransactionProgress(event: transactionEvent)
         }
     }

@@ -16,6 +16,8 @@ public protocol ICloverGoConnectorListener : ICloverConnectorListener {
     
     func onDevicesDiscovered(devices:[CLVModels.Device.GoDeviceInfo]) ->Void
     
+    func onDeviceInitializationEvent(event:CLVModels.Device.GoDeviceInitializationEvent) -> Void
+    
     func onTransactionProgress(event: CLVModels.Payments.GoTransactionEvent) -> Void
     
     func onSignatureRequired() -> Void

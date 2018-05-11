@@ -96,7 +96,7 @@ class DefaultCloverConnectorV2 : NSObject, ICloverConnector {
             } else if saleRequest.amount <= 0 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Request validation error", message: "In Sale : SaleRequest - the request amount cannot be zero. ", requestInfo: TxStartRequestMessage.SALE_REQUEST)
                 return
-            } else if saleRequest.externalId.characters.count == 0 || saleRequest.externalId.characters.count > 32 {
+            } else if saleRequest.externalId.count == 0 || saleRequest.externalId.count > 32 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Invalid argument.", message: "In Sale : SaleRequest - The externalId is invalid. The min length is 1 and the max length is 32. ", requestInfo: TxStartRequestMessage.SALE_REQUEST)
                 return
             } else {
@@ -127,7 +127,7 @@ class DefaultCloverConnectorV2 : NSObject, ICloverConnector {
             } else if authRequest.amount <= 0 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Request validation error", message: "In Auth : AuthRequest - the request amount cannot be zero. ", requestInfo: TxStartRequestMessage.AUTH_REQUEST)
                 return
-            } else if authRequest.externalId.characters.count == 0 || authRequest.externalId.characters.count > 32 {
+            } else if authRequest.externalId.count == 0 || authRequest.externalId.count > 32 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Invalid argument.", message: "In Auth : AuthRequest - The externalId is invalid. The min length is 1 and the max length is 32. ", requestInfo: TxStartRequestMessage.AUTH_REQUEST)
                 return
             } else {
@@ -171,7 +171,7 @@ class DefaultCloverConnectorV2 : NSObject, ICloverConnector {
             if preAuthRequest.amount <= 0 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Request validation error", message: "In PreAuth : PreAuthRequest - the request amount cannot be zero. ", requestInfo: TxStartRequestMessage.PREAUTH_REQUEST)
                 return
-            } else if preAuthRequest.externalId.characters.count == 0 || preAuthRequest.externalId.characters.count > 32 {
+            } else if preAuthRequest.externalId.count == 0 || preAuthRequest.externalId.count > 32 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Invalid argument.", message: "In PreAuth : PreAuthRequest - The externalId is invalid. The min length is 1 and the max length is 32. ", requestInfo: TxStartRequestMessage.PREAUTH_REQUEST)
                 return
             } else {
@@ -351,7 +351,7 @@ class DefaultCloverConnectorV2 : NSObject, ICloverConnector {
             if manualRefundRequest.amount <= 0 {
                 deviceObserver?.onFinishCancel(false, result: ResultCode.FAIL, reason: "Invalid argument", message: "The amount must be greater than 0", requestInfo: TxStartRequestMessage.CREDIT_REQUEST)
                 return
-            } else if manualRefundRequest.externalId.characters.count == 0 || manualRefundRequest.externalId.characters.count > 32 {
+            } else if manualRefundRequest.externalId.count == 0 || manualRefundRequest.externalId.count > 32 {
                 deviceObserver?.onFinishCancel(false, result:ResultCode.FAIL, reason: "Invalid argument.", message: "In PreAuth : ManualRefundRequest - The externalId is invalid. The min length is 1 and the max length is 32. ", requestInfo: TxStartRequestMessage.CREDIT_REQUEST)
                 return
             }
@@ -575,7 +575,7 @@ class DefaultCloverConnectorV2 : NSObject, ICloverConnector {
          */
         
         if let regex = try? NSRegularExpression(pattern: "\\(([^\\)]+)\\)", options: .caseInsensitive) {
-            let sanitizedFunctionName = regex.stringByReplacingMatches(in: funcName, options: .withTransparentBounds, range: NSMakeRange(0, funcName.characters.count), withTemplate: "")
+            let sanitizedFunctionName = regex.stringByReplacingMatches(in: funcName, options: .withTransparentBounds, range: NSMakeRange(0, funcName.count), withTemplate: "")
             return sanitizedFunctionName
         }
         
