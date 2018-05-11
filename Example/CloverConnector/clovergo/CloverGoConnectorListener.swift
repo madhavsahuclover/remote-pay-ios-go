@@ -15,7 +15,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     var alertController : UIAlertController?
     
     func onSendReceipt() {
-
+        
         if let ac = self.viewController?.presentedViewController as? UIAlertController {
             if !ac.isBeingDismissed && !ac.isBeingPresented {
                 ac.dismiss(animated: true, completion: {
@@ -78,9 +78,12 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     
     func onSignatureRequired() {
         if let ac = self.viewController?.presentedViewController as? UIAlertController {
-            ac.dismiss(animated: false, completion: nil)
+            ac.dismiss(animated: false, completion: {
+                self.viewController?.performSegue(withIdentifier: "signatureCloverGoViewControllerID", sender: nil)
+            })
+        } else {
+            self.viewController?.performSegue(withIdentifier: "signatureCloverGoViewControllerID", sender: nil)
         }
-        self.viewController?.performSegue(withIdentifier: "signatureCloverGoViewControllerID", sender: nil)
     }
     
     
@@ -98,10 +101,10 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             (action:UIAlertAction) in
             
         }))
-//        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
-//        while ((topController.presentedViewController) != nil) {
-//            topController = topController.presentedViewController!
-//        }
+        //        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
+        //        while ((topController.presentedViewController) != nil) {
+        //            topController = topController.presentedViewController!
+        //        }
         
         if let popoverController = choiceAlert.popoverPresentationController, let viewController = self.viewController {
             popoverController.sourceView = viewController.view
@@ -115,7 +118,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
         print("Discovered Readers...")
         let choiceAlert = UIAlertController(title: "Choose your reader", message: "Please select one of the reader", preferredStyle: .actionSheet)
         for device in devices {
-            let action = UIAlertAction(title: device.name, style: .default, handler: {
+            let action = UIAlertAction(title: device.deviceName, style: .default, handler: {
                 (action:UIAlertAction) in
                 ((UIApplication.shared.delegate as! AppDelegate).cloverConnector as? CloverGoConnector)?.connectToBluetoothDevice(deviceInfo: device)
                 
@@ -156,7 +159,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
         case .PROCESSING_TRANSACTION:
             showMessage("Processing Transaction", duration: 1)
         case .EMV_CARD_REMOVED:
-//            showMessage("Card removed", duration: 1)
+            //            showMessage("Card removed", duration: 1)
             break
             
         case .EMV_CARD_DIP_FAILED:
@@ -243,10 +246,10 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     }
     
     func onKeyedCardDataRequired() {
-//        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
-//        while ((topController.presentedViewController) != nil) {
-//            topController = topController.presentedViewController!
-//        }
+        //        var topController = UIApplication.shared.keyWindow!.rootViewController! as UIViewController
+        //        while ((topController.presentedViewController) != nil) {
+        //            topController = topController.presentedViewController!
+        //        }
         let alertController = UIAlertController(title: "Enter Credit Card Info", message: "", preferredStyle: .alert)
         
         alertController.addTextField {(textField:UITextField) -> Void in
@@ -269,12 +272,12 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             textField.tag = 3
             textField.delegate = self
         }
-
+        
         alertController.addTextField {(textField:UITextField) -> Void in
-                textField.placeholder = NSLocalizedString("ZipCode", comment: "ZipCode")
-                textField.keyboardType = .numberPad
-                textField.tag = 4
-                textField.delegate = self
+            textField.placeholder = NSLocalizedString("ZipCode", comment: "ZipCode")
+            textField.keyboardType = .numberPad
+            textField.tag = 4
+            textField.delegate = self
         }
         
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK action"), style: .default, handler: {(action: UIAlertAction) -> Void in
@@ -300,7 +303,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
         if !string.isEmpty {
             if textField.tag == 1 {
                 if let text = textField.text {
-                    if text.characters.count >= 16 {
+                    if text.count >= 16 {
                         return false
                     }
                 } else {
@@ -309,7 +312,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             }
             if textField.tag == 2 {
                 if let text = textField.text {
-                    if text.characters.count >= 4 {
+                    if text.count >= 4 {
                         return false
                     }
                 } else {
@@ -318,7 +321,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             }
             if textField.tag == 3 {
                 if let text = textField.text {
-                    if text.characters.count >= 4 {
+                    if text.count >= 4 {
                         return false
                     }
                 } else {
@@ -327,7 +330,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             }
             if textField.tag == 4 {
                 if let text = textField.text {
-                    if text.characters.count >= 6 {
+                    if text.count >= 6 {
                         return false
                     }
                 } else {
@@ -361,7 +364,7 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
     @objc private func offlineProcessingCompleted() {
         showMessage("Offline transaction processing completed", duration: 2)
     }
-
+    
     override func onReadCardDataResponse(_ readCardDataResponse: ReadCardDataResponse) {
         if let vc = self.viewController as? ReadCardDataViewController {
             vc.cardDataTextView.text = ""
@@ -402,5 +405,29 @@ class CloverGoConnectorListener : CloverConnectorListener, ICloverGoConnectorLis
             }
         }
     }
-
+    
+    func onDeviceInitializationEvent(event: CLVModels.Device.GoDeviceInitializationEvent) {
+        if event == .INITIALIZATION_COMPLETE || event == .FIRMWARE_UPDATE_COMPLETE {
+            showMessage(event.getDescription(), duration: 1)
+        } else {
+            showMessage(event.getDescription(), duration: 1000)
+        }
+    }
+    
+    override func onDeviceDisconnected() {
+        super.onDeviceDisconnected()
+        FLAGS.is350ReaderInitialized = false
+        FLAGS.is450ReaderInitialized = false
+        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "readerSetUpViewControllerID") as! ReaderSetUpViewController
+        if let ac = self.viewController?.presentedViewController as? UIAlertController {
+            ac.dismiss(animated: false, completion: {
+                self.viewController?.present(nextViewController, animated:true, completion:nil)
+            })
+        } else {
+            self.viewController?.present(nextViewController, animated:true, completion:nil)
+        }
+    }
+    
 }
+
